@@ -2,7 +2,7 @@
 
 **Independent dual-agent verification for high-stakes AI classification.** Two models from different vendors classify the same case without seeing each other's work; a deterministic check surfaces where they disagree; a human always makes the call. The rules that govern the AI live in configuration, not code.
 
-> 🚧 **Private build in progress.** Claims in the *RUNS* column below are validated against working code before this repository is made public. Nothing here describes behaviour that does not yet run.
+> 🚧 **Private build in progress.** This README is written spec-first — the arc below describes the *target* product, and the honesty-spine table is its launch state. Every claim in the *RUNS* column is validated against working code **before this repository is made public**; during the private build some are still being wired.
 
 ---
 

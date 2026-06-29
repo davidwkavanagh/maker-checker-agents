@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from maker_checker_agents import scope_gate
 from maker_checker_agents.config import load_policy
 from maker_checker_agents.models import Case
 from maker_checker_agents.scope_gate import run_scope_gate
@@ -24,17 +27,11 @@ def test_in_scope_case_proceeds() -> None:
 
 
 def test_in_scope_by_domain_only() -> None:
-    case = Case(
-        case_id="c2",
-        system_name="HR helper",
-        purpose="Assist with paperwork",
-        domain="hr",
-    )
-    result = run_scope_gate(case, POLICY)
-    assert result.proceed is True
+    case = Case(case_id="c2", system_name="HR helper", purpose="Assist with paperwork", domain="hr")
+    assert run_scope_gate(case, POLICY).proceed is True
 
 
-def test_out_of_scope_case_skips_pair_but_flags_human() -> None:
+def test_out_of_scope_skips_pair_but_never_the_human() -> None:
     case = Case(
         case_id="c3",
         system_name="Recipe suggester",
@@ -44,4 +41,41 @@ def test_out_of_scope_case_skips_pair_but_flags_human() -> None:
     result = run_scope_gate(case, POLICY)
     assert result.proceed is False
     assert result.applicable_frameworks == []
-    assert "human" in result.reason
+    # The invariant is the typed field, not a phrase in the reason string.
+    assert result.routed_to_human is True
+
+
+def test_partial_phrase_does_not_match() -> None:
+    # "recognition" present but "facial"/"emotion" absent -> no trigger phrase complete.
+    case = Case(
+        case_id="c4",
+        system_name="Dictation",
+        purpose="speech recognition for note taking",
+        domain="consumer",
+    )
+    assert run_scope_gate(case, POLICY).proceed is False
+
+
+def test_sensitivity_keyword_flags_case() -> None:
+    case = Case(
+        case_id="c5",
+        system_name="School tool",
+        purpose="recruitment screening involving children",
+        domain="education",
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True
+    assert result.sensitive is True
+
+
+def test_gate_fails_open_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    def boom(*_args: object, **_kwargs: object) -> bool:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(scope_gate, "_phrase_present", boom)
+    case = Case(case_id="c6", system_name="X", purpose="credit scoring", domain="finance")
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True
+    assert result.degraded is True
+    assert set(result.applicable_frameworks) == set(POLICY.framework_triggers)
+    assert result.routed_to_human is True

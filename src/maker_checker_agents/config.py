@@ -10,24 +10,29 @@ mid-classification.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 
 class ConfigError(Exception):
     """Raised when the policy file is missing, unreadable, or fails validation."""
 
 
+# Supported model vendors. Adding one means adding an adapter in agents.py, so
+# the policy must fail fast on an unsupported provider rather than at call time.
+Provider = Literal["google", "anthropic"]
+
+
 class ModelSpec(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    provider: str
+    provider: Provider
     model: str
 
 
-class Models(BaseModel):
+class ModelAssignments(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     maker: ModelSpec
@@ -37,7 +42,7 @@ class Models(BaseModel):
 class RiskTier(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    id: str
+    id: str = Field(min_length=1)
     label: str
     description: str = ""
 
@@ -45,7 +50,7 @@ class RiskTier(BaseModel):
 class Agreement(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    threshold: str = "exact"
+    threshold: Literal["exact"] = "exact"
 
 
 class FrameworkTrigger(BaseModel):
@@ -68,11 +73,18 @@ class Policy(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     risk_taxonomy: list[RiskTier] = Field(min_length=1)
-    models: Models
+    models: ModelAssignments
     agreement: Agreement = Field(default_factory=Agreement)
     framework_triggers: dict[str, FrameworkTrigger] = Field(min_length=1)
     sensitivity_keywords: list[str] = Field(default_factory=list)
     prompts: Prompts
+
+    @model_validator(mode="after")
+    def _risk_tier_ids_must_be_unique(self) -> Policy:
+        ids = [tier.id for tier in self.risk_taxonomy]
+        if len(set(ids)) != len(ids):
+            raise ValueError("risk_taxonomy ids must be unique")
+        return self
 
     @property
     def risk_tier_ids(self) -> list[str]:

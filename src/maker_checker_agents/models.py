@@ -9,6 +9,7 @@ and the pipeline checks it against the loaded policy at runtime.
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -52,15 +53,20 @@ class AgentOutput(BaseModel):
 class ScopeResult(BaseModel):
     """Outcome of the deterministic scope gate.
 
-    ``proceed`` gates only the *expensive model spend*, never the human: an
-    out-of-scope case (``proceed=False``) is still routed to a reviewer.
-    ``degraded`` marks a gate that failed open on error.
+    ``proceed`` gates only the *expensive model spend*. ``routed_to_human`` is
+    typed ``Literal[True]`` — the invariant "every case reaches a human, in
+    scope or not" is enforced by the type system, not a comment: it is
+    impossible to construct a ``ScopeResult`` that skips the human.
+    ``sensitive`` is set when the case matches the policy's sensitivity
+    keywords. ``degraded`` marks a gate that failed open on error.
     """
 
     model_config = ConfigDict(frozen=True)
 
     applicable_frameworks: list[str] = Field(default_factory=list)
     proceed: bool
+    routed_to_human: Literal[True] = True
+    sensitive: bool = False
     degraded: bool = False
     reason: str = ""
 
@@ -80,5 +86,5 @@ class VerdictResult(BaseModel):
     maker: AgentOutput | None
     checker: AgentOutput | None
     degraded: bool = False
-    routed_to_human: bool = True
+    routed_to_human: Literal[True] = True
     notes: str = ""

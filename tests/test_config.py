@@ -36,3 +36,43 @@ def test_non_mapping_yaml_rejected(tmp_path: Path) -> None:
     bad.write_text("- just\n- a\n- list\n")
     with pytest.raises(ConfigError, match="mapping"):
         load_policy(bad)
+
+
+def _minimal_policy(**overrides: str) -> str:
+    blocks = {
+        "taxonomy": "risk_taxonomy:\n  - {id: high, label: High}\n",
+        "models": (
+            "models:\n  maker: {provider: google, model: g}\n"
+            "  checker: {provider: anthropic, model: c}\n"
+        ),
+        "triggers": "framework_triggers:\n  eu_ai_act:\n    keywords: [biometric]\n",
+        "prompts": "prompts:\n  maker_system: m\n  checker_system: c\n",
+    }
+    blocks.update(overrides)
+    return "".join(blocks.values())
+
+
+def test_duplicate_risk_tier_ids_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "policy.yaml"
+    dupes = "risk_taxonomy:\n  - {id: high, label: A}\n  - {id: high, label: B}\n"
+    bad.write_text(_minimal_policy(taxonomy=dupes))
+    with pytest.raises(ConfigError, match="unique"):
+        load_policy(bad)
+
+
+def test_unsupported_provider_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "policy.yaml"
+    typo = (
+        "models:\n  maker: {provider: googel, model: g}\n"
+        "  checker: {provider: anthropic, model: c}\n"
+    )
+    bad.write_text(_minimal_policy(models=typo))
+    with pytest.raises(ConfigError, match="validation"):
+        load_policy(bad)
+
+
+def test_unknown_agreement_threshold_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "policy.yaml"
+    bad.write_text(_minimal_policy() + "agreement:\n  threshold: loose\n")
+    with pytest.raises(ConfigError, match="validation"):
+        load_policy(bad)
