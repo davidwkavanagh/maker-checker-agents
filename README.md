@@ -75,11 +75,17 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 
 ## Honesty spine
 
-| RUNS (real, demoable) | DESIGNED / NEXT (honest roadmap) |
+*This table is the **target launch state** — the bar this repo must clear before it
+goes public. Every RUNS claim is validated against working code first (see the
+banner at the top); it is not a snapshot of the in-progress private build. Current
+build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/decisions/adr-lineage.md).*
+
+| RUNS at launch (validated against code first) | DESIGNED / NEXT (honest roadmap) |
 |---|---|
 | Maker-Checker independent verification | Route-before-you-spend router |
-| Governance in config (config-not-code, on-deploy) | Multi-framework activation |
-| RAG grounding with retrieved-source provenance | Cost-optimised expansion |
+| Human always decides — type-enforced | Multi-framework activation |
+| Governance in config (config-not-code, validated at startup) | RAG grounding with retrieved-source provenance |
+| | Cost-optimised expansion |
 
 *If a claim can't sit cleanly on the left, it goes on the right with the tense to match.*
 
