@@ -49,6 +49,22 @@ class AgentOutput(BaseModel):
     articles_cited: list[str] = Field(default_factory=list)
 
 
+class ScopeResult(BaseModel):
+    """Outcome of the deterministic scope gate.
+
+    ``proceed`` gates only the *expensive model spend*, never the human: an
+    out-of-scope case (``proceed=False``) is still routed to a reviewer.
+    ``degraded`` marks a gate that failed open on error.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    applicable_frameworks: list[str] = Field(default_factory=list)
+    proceed: bool
+    degraded: bool = False
+    reason: str = ""
+
+
 class VerdictResult(BaseModel):
     """Deterministic comparison of the two agents plus the routing outcome.
 

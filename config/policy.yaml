@@ -1,0 +1,89 @@
+# policy.yaml — the governance layer.
+#
+# A compliance / risk owner edits THIS file to change the system's behaviour:
+# the risk taxonomy, which model does which job, how strict agreement is, the
+# framing each agent receives, and which inputs are in scope. No code change.
+# Changes take effect on the next deploy — config, not code; on-deploy.
+
+# --- Risk taxonomy: the tiers the system can assign (EU AI Act worked example) ---
+risk_taxonomy:
+  - id: unacceptable
+    label: Unacceptable risk
+    description: >-
+      Prohibited practices — e.g. social scoring, manipulative subliminal
+      techniques, untargeted facial-recognition scraping.
+  - id: high
+    label: High risk
+    description: >-
+      Permitted but heavily regulated — e.g. biometric identification, credit
+      scoring, recruitment, critical infrastructure.
+  - id: limited
+    label: Limited risk
+    description: >-
+      Transparency obligations only — e.g. chatbots, emotion recognition,
+      deep-fake disclosure.
+  - id: minimal
+    label: Minimal risk
+    description: >-
+      No specific obligations — e.g. spam filters, AI in video games.
+
+# --- Which model does which job. Swap a vendor here, not in the code. ---
+models:
+  maker:
+    provider: google
+    model: gemini-2.5-pro
+  checker:
+    provider: anthropic
+    model: claude-sonnet-4-6
+
+# --- How strict "the two agents agree" is. ---
+agreement:
+  threshold: exact   # exact = identical risk_tier required for CONSISTENT
+
+# --- Scope gate (deterministic, config-driven). A case matching no framework
+#     is out of scope: skip the expensive pair, but still route to a human. ---
+framework_triggers:
+  eu_ai_act:
+    keywords:
+      - biometric
+      - facial recognition
+      - credit scoring
+      - creditworthiness
+      - recruitment
+      - hiring
+      - cv screening
+      - social scoring
+      - critical infrastructure
+      - emotion recognition
+      - predictive policing
+    domains:
+      - finance
+      - hr
+      - law-enforcement
+      - healthcare
+      - education
+      - critical-infrastructure
+
+# --- Inputs that flag a case as sensitive (raises reviewer attention). ---
+sensitivity_keywords:
+  - children
+  - minors
+  - health records
+  - criminal record
+  - ethnicity
+  - religion
+  - sexual orientation
+  - political opinion
+
+# --- The framing each agent is given. Owned by the business, not the code.
+#     The Checker is never told the Maker's answer — independence by isolation. ---
+prompts:
+  maker_system: >-
+    You are an independent AI compliance classifier. Given a description of an
+    AI system, assign exactly one risk tier from the provided taxonomy and cite
+    the governing articles. Reason only from the facts given; do not assume.
+  checker_system: >-
+    You are an independent AI compliance classifier. Given a description of an
+    AI system, assign exactly one risk tier from the provided taxonomy and cite
+    the governing articles. You are reviewing this case fresh; no other
+    classification has been shown to you.

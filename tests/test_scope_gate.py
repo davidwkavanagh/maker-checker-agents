@@ -1,0 +1,47 @@
+"""Tests for the deterministic scope gate — against the real policy.yaml."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from maker_checker_agents.config import load_policy
+from maker_checker_agents.models import Case
+from maker_checker_agents.scope_gate import run_scope_gate
+
+POLICY = load_policy(Path(__file__).resolve().parent.parent / "config" / "policy.yaml")
+
+
+def test_in_scope_case_proceeds() -> None:
+    case = Case(
+        case_id="c1",
+        system_name="Loan screener",
+        purpose="Automated credit scoring for loan applications",
+        domain="finance",
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True
+    assert "eu_ai_act" in result.applicable_frameworks
+
+
+def test_in_scope_by_domain_only() -> None:
+    case = Case(
+        case_id="c2",
+        system_name="HR helper",
+        purpose="Assist with paperwork",
+        domain="hr",
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True
+
+
+def test_out_of_scope_case_skips_pair_but_flags_human() -> None:
+    case = Case(
+        case_id="c3",
+        system_name="Recipe suggester",
+        purpose="Suggest dinner recipes from pantry items",
+        domain="cooking",
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is False
+    assert result.applicable_frameworks == []
+    assert "human" in result.reason
