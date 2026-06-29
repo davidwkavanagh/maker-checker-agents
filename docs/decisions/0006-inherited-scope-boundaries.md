@@ -38,12 +38,13 @@ the parent built; none belongs in a minimal public engine.
 | **Observability infrastructure** | Hosted tracing with sensitive-field masking. | Offline by default. Standard-library logging is the entire observability story; there is no third-party trace boundary to mask. |
 | **Hosted deployment** | A hosted service with an ephemeral filesystem, EU data-residency config. | Runs from a clean clone. The *principle* (fail-fast config, honest degradation) is kept; the infrastructure is not. |
 | **MCP tool surface** | A least-privilege set of MCP tools exposed to a frontend. | No frontend to serve and no tools to expose. The restraint principle is moot without a surface. |
-| **Real corpus ingestion** | A pipeline turning regulatory PDFs into a structured vector store (layout parsing → LLM batch extraction → legal-tuned embeddings → ChromaDB). | This engine **mocks** retrieval with hand-authored sources (a deferred build). The real ingestion infrastructure is the production version — not needed to demonstrate the pattern. Its retrieved-source *provenance* idea is deferred, not cut. |
+| **Real corpus ingestion + grounding** | A pipeline turning regulatory PDFs into a structured vector store (layout parsing → LLM batch extraction → legal-tuned embeddings → ChromaDB), then retrieval-grounding each classification against it with retrieved-source provenance. | **Built and tested in the parent system; not reproduced here** — copying it would expose proprietary code and need a real vector store. The grounding / provenance *design* is recorded in [0007] so the engineering is visible without duplicating it. |
 
-**Three of these are reductions, not clean removals** — the sensitivity flag (in
-place of tokenisation), standard-library logging (in place of hosted tracing), and
-mock retrieval (in place of real ingestion) keep the minimum the engine needs while
-dropping the surrounding infrastructure. The other eight are genuine absences.
+**Two of these are reductions, not clean removals** — the sensitivity flag (in
+place of tokenisation) and standard-library logging (in place of hosted tracing) keep
+the minimum the engine needs while dropping the surrounding infrastructure. The other
+nine are genuine absences (real ingestion among them — its grounding/provenance design
+is recorded in [0007], but no retrieval runs here).
 
 ## Consequences
 
@@ -59,9 +60,12 @@ dropping the surrounding infrastructure. The other eight are genuine absences.
 ## What this is NOT
 
 This is not a list of things the parent system got wrong, and not a roadmap for
-*this* repo. Concerns that *are* coming to this engine (grounding, the
-deterministic verdict, the evaluation method) are **deferred**, not cut — they're
-tracked in [`adr-lineage.md`](adr-lineage.md) and land with their code, not here.
+*this* repo. Concerns that *are* coming to this engine (the deterministic verdict and
+the evaluation method) are **deferred**, not cut — they're tracked in
+[`adr-lineage.md`](adr-lineage.md) and land with their code, not here. Grounding is
+*not* among them: it's built in the parent and deliberately not reproduced (see the
+ingestion/grounding row above), with its design in [0007].
 
 [0002]: 0002-deterministic-config-driven-scope-gate.md
 [0005]: 0005-type-enforced-hitl.md
+[0007]: 0007-grounding-and-retrieved-source-provenance.md

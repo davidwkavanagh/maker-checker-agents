@@ -13,8 +13,11 @@ decision is one of:
 - **Deferred** — the idea is coming to this engine, but its decision record is
   written *with* the code that implements it (writing it now would be fiction).
   Tracked against a backlog item.
-- **Cut** — deliberately out of scope for a single-shot offline CLI engine.
-  Recorded as a group in [0006](0006-inherited-scope-boundaries.md).
+- **Cut** — deliberately not reproduced in this public rebuild — either out of scope
+  for a single-shot offline CLI engine, or built and tested in the parent system and
+  not copied here (to keep the demo small and avoid exposing proprietary code).
+  Recorded as a group in [0006](0006-inherited-scope-boundaries.md). A cut may still
+  carry a design record showing the parent-system engineering (e.g. grounding → [0007]).
 
 The point of keeping this map: a reader who knows the domain can confirm nothing
 was missed by accident. Cuts and deferrals are decisions, not gaps.
@@ -39,34 +42,37 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 | **014** HITL reviewer decision model | 4 outcomes, segregation of duties, escalation | **Cut** → [0006] (always-human *principle* kept in [0005]) |
 | **015** Maker-Checker independence | State isolation, Checker never sees Maker | **Covered** → [0001] |
 | **016** Prompt governance + state integrity | Prompts in governed config; write-once audit field | **Covered** → [0004] (prompts) + frozen Pydantic models (integrity) |
-| **017** Parametric bleed / grounding | Why ground citations; provenance as proof | **Deferred** → mock-RAG build |
-| **018** Semantic knowledge layer | Real corpus ingest (ChromaDB, voyage-law-2, batch) | **Cut** (real ingest) → [0006]; *provenance* idea **deferred** → mock-RAG build |
+| **017** Parametric bleed / grounding | Why ground citations; provenance as proof | **Cut** → [0006] (built & tested in the parent; not reproduced here to protect code); design recorded in [0007] |
+| **018** Semantic knowledge layer | Real corpus ingest (ChromaDB, voyage-law-2, batch) + retrieved-source provenance | **Cut** → [0006] (built in the parent; not reproduced here); design recorded in [0007] |
 | **019** FastAPI reviewer backend | API surface, CQRS, audit endpoints | **Cut** → [0006] (CLI instead) |
 | **020** Multi-framework architecture | `framework_triggers`, Node 1.5 detection, clean-room state, fallback | **Covered** → [0002] (gate) + [0001] (state isolation) + [0003] (fallback); per-framework *classification* **deferred** (designed/NEXT) |
 | **021** Rubric scorer governance | Independent third-model scorer, DCP-governed prompt | **Deferred** → eval-framework work (designed/NEXT) |
 
 ## Summary
 
-21 distinct parent decisions. Four are **split** — a principle is settled now while
+21 distinct parent decisions. Three are **split** — a principle is settled now while
 an implementation detail is deferred to the build that needs it — so they appear in
 more than one row below, and the columns deliberately do **not** sum to 21.
 
 | Status | Parent decisions |
 |---|---|
 | Covered | 011, 015, 016 + split 001, 012, 020 |
-| Deferred | 006, 013, 017, 021 + split 001, 012, 018, 020 |
-| Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 019 + split 018 |
+| Deferred | 006, 013, 021 + split 001, 012, 020 |
+| Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 017, 018, 019 |
 
-The four splits: **001** (deterministic principle covered / the verdict itself
+The three splits: **001** (deterministic principle covered / the verdict itself
 deferred), **012** (fail-open covered / agent degradation + parallelism deferred),
-**018** (real corpus ingestion cut / retrieved-source provenance deferred), **020**
-(detection + state isolation + fallback covered / per-framework classification
+**020** (detection + state isolation + fallback covered / per-framework classification
 deferred).
 
+ADR-017 (grounding) and ADR-018 (knowledge layer) are **not** splits: both are fully
+cut from this rebuild — built and tested in the parent, deliberately not reproduced —
+with their combined design recorded in [0007].
+
 [0006] records the cut/reduced group — **11 entries**: the ten surface/infra
-removals plus ADR-018's real ingestion (mocked instead). Three of the eleven are
-reductions rather than clean removals (sensitivity flag, stdlib logging, mock
-retrieval).
+removals plus the grounding/ingestion cluster (ADR-017 + ADR-018 — built in the parent,
+not reproduced; design in [0007]). Two of the eleven are reductions rather than clean
+removals (sensitivity flag, stdlib logging); the other nine are genuine absences.
 
 Deferred decisions are recorded against their backlog item so the decision record
 gets written when the code does — see the build backlog. This document is updated
@@ -78,3 +84,4 @@ as deferred items land.
 [0004]: 0004-config-as-governance.md
 [0005]: 0005-type-enforced-hitl.md
 [0006]: 0006-inherited-scope-boundaries.md
+[0007]: 0007-grounding-and-retrieved-source-provenance.md
