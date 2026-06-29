@@ -37,7 +37,7 @@ This is the most product-leader-relevant asset in the repo: it turns a model pip
 
 ## 4. What it costs — a TCO method *(not a number on a random Tuesday)*
 
-Running two models instead of one has a cost, and a serious buyer will ask what it is. This section is a **costing method**, not a hardcoded figure: token overhead of the second agent, context-window growth from retrieved grounding, retry logic, and — the line most people miss — **the cost of the human-in-the-loop cycles that divergence triggers.**
+Running two models instead of one has a cost, and a serious buyer will ask what it is. This section is a **costing method**, not a hardcoded figure: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the human-in-the-loop cycles that divergence triggers.**
 
 The output is a model you can point at *your* volumes to project a P&L line item at scale.
 
@@ -49,7 +49,7 @@ A method for knowing whether it works beats a number that asks you to take it on
 
 ## 6. Latency — a decision, not a gap
 
-Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** (fan-out / fan-in) — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor is *(slower model + retrieval + the explanation step)*; divergent cases add human wall-clock, which is accounted for in the TCO method above, not hidden here.
+Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** (fan-out / fan-in) — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor is *(slower model + the explanation step; add retrieval in the grounded parent system)*; divergent cases add human wall-clock, which is accounted for in the TCO method above, not hidden here.
 
 ## 7. What's next — route before you spend *(designed, not shipped — labelled)*
 
@@ -68,18 +68,24 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 | Two vendors, not two of the same model | Correlated errors defeat the point of a second opinion |
 | Deterministic verdict, not an LLM judge | The thing that decides agreement can't be allowed to hallucinate |
 | Config-driven router (next), not an LLM router | Triage should be cheap and predictable |
-| RAG grounding, not full-context | Cost and focus — retrieve what's relevant, don't pay for the whole corpus |
+| RAG grounding, not full-context *(built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md))* | Cost and focus — retrieve what's relevant, don't pay for the whole corpus |
 | Parallel, not sequential | Independence without paying latency twice |
 
 ---
 
 ## Honesty spine
 
-| RUNS (real, demoable) | DESIGNED / NEXT (honest roadmap) |
+*This table is the **target launch state** — the bar this repo must clear before it
+goes public. Every RUNS claim is validated against working code first (see the
+banner at the top); it is not a snapshot of the in-progress private build. Current
+build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/decisions/adr-lineage.md).*
+
+| RUNS at launch (validated against code first) | DESIGNED / NEXT (honest roadmap) |
 |---|---|
 | Maker-Checker independent verification | Route-before-you-spend router |
-| Governance in config (config-not-code, on-deploy) | Multi-framework activation |
-| RAG grounding with retrieved-source provenance | Cost-optimised expansion |
+| Human always decides — type-enforced | Multi-framework activation |
+| Governance in config (config-not-code, validated at startup) | Grounding *hardening* + drift detection (base grounding built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) |
+| | Cost-optimised expansion |
 
 *If a claim can't sit cleanly on the left, it goes on the right with the tense to match.*
 
