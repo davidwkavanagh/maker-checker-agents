@@ -23,6 +23,8 @@ Two agents on **different model vendors** classify the same case:
 
 This is not an invention. It's the **pragmatic application of an established control pattern** — maker-checker / four-eyes, long used in finance and audit — to the specific failure modes of LLMs. The contribution is the engineering that makes it real: hard independence, a deterministic verdict, and honest failure handling.
 
+> **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the parametric-bleed failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
+
 > _[visual: demo GIF — Maker-Checker running on a sample case, terminal output]_
 
 ## 3. The digital-enablement layer — governance in config, not code
@@ -89,6 +91,8 @@ build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/deci
 
 *If a claim can't sit cleanly on the left, it goes on the right with the tense to match.*
 
+*RUNS = with your own Google + Anthropic API keys; there is no offline mode ([0008](docs/decisions/0008-runnable-agent-layer.md)).*
+
 ---
 
 ## Worked example
@@ -97,7 +101,7 @@ The configuration and sample cases in this repo use the **EU AI Act** as the wor
 
 ## Run it
 
-> _Quickstart lands here once the engine is built — one command, no friction._
+> _Quickstart lands here once the CLI is built — one command, runs with your own Google + Anthropic API keys (no offline mode)._
 
 ## License
 

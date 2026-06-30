@@ -66,6 +66,18 @@ the evaluation method) are **deferred**, not cut — they're tracked in
 *not* among them: it's built in the parent and deliberately not reproduced (see the
 ingestion/grounding row above), with its design in [0007].
 
+## Amendment — 2026-06-30 (#3, via [0008])
+
+The "classifies fictional cases **offline**" / "single-shot offline engine"
+framing above is superseded by [0008]: the engine makes **live cross-vendor API
+calls with the caller's own keys** — there is no offline replay mode (a capture/
+replay harness was itself gold-plating, against the KISS discipline this record
+defends). Only the run-mode is corrected; the scope cuts in the table stand
+unchanged. Note "**Offline by default**" in the *Observability* row still holds —
+there it means no hosted trace boundary to mask, not the absence of API calls. See
+[0008].
+
 [0002]: 0002-deterministic-config-driven-scope-gate.md
 [0005]: 0005-type-enforced-hitl.md
 [0007]: 0007-grounding-and-retrieved-source-provenance.md
+[0008]: 0008-runnable-agent-layer.md

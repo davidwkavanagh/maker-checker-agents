@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Real frontier-model calls. The offline demo runs without these.
+# Real frontier-model calls — required to run the Maker + Checker agents (your own keys; see 0008).
 live = [
     "langchain-google-genai>=1.0",
     "langchain-anthropic>=0.1",

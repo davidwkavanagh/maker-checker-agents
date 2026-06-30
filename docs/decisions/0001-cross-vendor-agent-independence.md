@@ -45,5 +45,15 @@ about having different schemas.
 Descends from the parent system's ADR-015 (independence by state isolation,
 Option B→C) and ADR-011 (cross-provider challenge). See [`adr-lineage.md`](adr-lineage.md).
 
+## Amendment — 2026-06-30 (#3, via [0008])
+
+Run-mode is now **live cross-vendor calls with the caller's own API keys**; there
+is no offline demo. This supersedes the second consequence above ("the offline
+demo avoids both"): running the agents requires both vendor SDKs and both API keys.
+Independence-by-state-isolation is unchanged — it is enforced by function signature
+(`run_checker(case, policy)` cannot receive Maker output), not by run-mode. See
+[0008].
+
 [0002]: 0002-deterministic-config-driven-scope-gate.md
 [0004]: 0004-config-as-governance.md
+[0008]: 0008-runnable-agent-layer.md

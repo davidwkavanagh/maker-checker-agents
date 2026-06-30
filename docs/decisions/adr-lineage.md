@@ -9,12 +9,12 @@ this repo, so the inheritance is provable rather than asserted. Each parent
 decision is one of:
 
 - **Covered** — the idea lives here, recorded in one of this repo's decision
-  records ([0001](0001-cross-vendor-agent-independence.md)–[0006](0006-inherited-scope-boundaries.md)).
+  records ([0001](0001-cross-vendor-agent-independence.md)–[0008](0008-runnable-agent-layer.md)).
 - **Deferred** — the idea is coming to this engine, but its decision record is
   written *with* the code that implements it (writing it now would be fiction).
   Tracked against a backlog item.
 - **Cut** — deliberately not reproduced in this public rebuild — either out of scope
-  for a single-shot offline CLI engine, or built and tested in the parent system and
+  for a single-shot CLI engine, or built and tested in the parent system and
   not copied here (to keep the demo small and avoid exposing proprietary code).
   Recorded as a group in [0006](0006-inherited-scope-boundaries.md). A cut may still
   carry a design record showing the parent-system engineering (e.g. grounding → [0007]).
@@ -37,7 +37,7 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 | **009** Safe Harbour tokenisation | Strip PII before a provider boundary | **Cut** → [0006] (sensitivity *flag* kept; lesson kept) |
 | **010** Local → hosted deployment | Railway, ephemeral filesystem | **Cut** → [0006] (runs from clean clone) |
 | **011** Tiered decision pipeline | 4 tiers + cross-provider challenge; "what we reject" table | **Covered** → [0001] + [0002] + [0005] |
-| **012** Multi-agent + graceful degradation | Failure modes, parallel fan-out, verdict cap | **Covered** (fail-open) → [0003]; agent degradation + parallelism **deferred** → agents/verdict builds |
+| **012** Multi-agent + graceful degradation | Failure modes, parallel fan-out, verdict cap | **Covered** — fail-open → [0003]; agent degradation (out-of-taxonomy / unparseable = failure) → [0008]. Parallel fan-out still **deferred** → pipeline build (#5) |
 | **013** Tiered eval set | Rubric, gatekeeper tiers, hypothesis | **Deferred** → eval-framework work (designed/NEXT) |
 | **014** HITL reviewer decision model | 4 outcomes, segregation of duties, escalation | **Cut** → [0006] (always-human *principle* kept in [0005]) |
 | **015** Maker-Checker independence | State isolation, Checker never sees Maker | **Covered** → [0001] |
@@ -61,7 +61,7 @@ more than one row below, and the columns deliberately do **not** sum to 21.
 | Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 017, 018, 019 |
 
 The three splits: **001** (deterministic principle covered / the verdict itself
-deferred), **012** (fail-open covered / agent degradation + parallelism deferred),
+deferred), **012** (fail-open + agent degradation covered / parallel fan-out deferred),
 **020** (detection + state isolation + fallback covered / per-framework classification
 deferred).
 
@@ -85,3 +85,4 @@ as deferred items land.
 [0005]: 0005-type-enforced-hitl.md
 [0006]: 0006-inherited-scope-boundaries.md
 [0007]: 0007-grounding-and-retrieved-source-provenance.md
+[0008]: 0008-runnable-agent-layer.md
