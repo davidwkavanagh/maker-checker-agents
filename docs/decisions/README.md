@@ -14,6 +14,7 @@ for how decisions get made and recorded.
 | [0005](0005-type-enforced-hitl.md) | Human-in-the-loop is enforced by the type system | Accepted |
 | [0006](0006-inherited-scope-boundaries.md) | Inherited concerns deliberately not built | Accepted |
 | [0007](0007-grounding-and-retrieved-source-provenance.md) | Grounding and retrieved-source provenance | Accepted (design record) |
+| [0008](0008-runnable-agent-layer.md) | The runnable agent layer — run-mode, citation honesty, agent degradation | Accepted |
 
 Records 0001–0005 are a **backfill**: the decisions were made and the code was
 already adversarially reviewed (commit `9cec880`) before they were written up.

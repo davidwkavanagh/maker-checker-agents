@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Real frontier-model calls. The offline demo runs without these.
+# Real frontier-model calls — required to run the Maker + Checker agents (your own keys; see 0008).
 live = [
     "langchain-google-genai>=1.0",
     "langchain-anthropic>=0.1",
@@ -44,5 +44,14 @@ strict = true
 files = ["src", "tests"]
 plugins = ["pydantic.mypy"]
 
+# The live adapters are optional extras, not installed in CI (lint/type/test runs
+# on `.[dev]` only). The agent layer imports them lazily inside `_invoke`.
+[[tool.mypy.overrides]]
+module = ["langchain_anthropic.*", "langchain_google_genai.*", "langchain_core.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "live: makes real, paid cross-vendor API calls; skipped in CI (run with -m live)",
+]

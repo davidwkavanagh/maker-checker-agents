@@ -43,8 +43,9 @@ the ceremony that only existed to protect a legally-consequential artifact:
 - **Signed-PDF audit records and sub-article citation verification** — the EU AI
   Act is a *worked example* in this repo, not a live compliance product.
 - **Deploy / incident apparatus** (CDN, hosted DB, release hooks) — this runs
-  from a clean clone, offline by default. The *principle* (fail-fast config,
-  honest degradation) is kept; the infrastructure is not.
+  from a clean clone with the caller's own API keys; there is no hosted
+  infrastructure. The *principle* (fail-fast config, honest degradation) is kept;
+  the infrastructure is not.
 
 Scope and process are orthogonal. Cutting scope does not mean cutting rigor.
 
