@@ -129,24 +129,44 @@ def _extract_json(text: str) -> dict[str, Any] | None:
 def _invoke(spec: ModelSpec, system: str, user: str) -> str:
     """Call the configured vendor and return the raw text response.
 
-    The only part that needs the ``live`` extras and an API key. Tests monkeypatch
-    this, so everything above is exercised against the real code path.
+    The only part that needs the ``live`` extras and an API key: it constructs the
+    client (``_make_client``) and makes the one network call. The vendor-dispatch
+    and response-flattening logic live in ``_make_client`` / ``_extract_text``, which
+    are pure and unit-tested against a stubbed transport (0008 Decision 1 contract
+    test; #519 — at least one test hits the real dispatch/parse artifact).
     """
-    if spec.provider == "google":
-        from langchain_google_genai import ChatGoogleGenerativeAI
-
-        client: Any = ChatGoogleGenerativeAI(model=spec.model, temperature=0)
-    elif spec.provider == "anthropic":
-        from langchain_anthropic import ChatAnthropic
-
-        client = ChatAnthropic(model=spec.model, temperature=0)
-    else:
-        assert_never(spec.provider)
+    client = _make_client(spec)
 
     from langchain_core.messages import HumanMessage, SystemMessage
 
     response: Any = client.invoke([SystemMessage(content=system), HumanMessage(content=user)])
-    content: Any = response.content
+    return _extract_text(response.content)
+
+
+def _make_client(spec: ModelSpec) -> Any:
+    """Bind a vendor to its LangChain ``ChatModel`` (the cross-vendor seam).
+
+    Exhaustive over ``Provider`` — a new vendor is a mypy error here, never a silent
+    default. Lazy imports keep the ``live`` extras out of CI.
+    """
+    if spec.provider == "google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        return ChatGoogleGenerativeAI(model=spec.model, temperature=0)
+    if spec.provider == "anthropic":
+        from langchain_anthropic import ChatAnthropic
+
+        return ChatAnthropic(model=spec.model, temperature=0)
+    assert_never(spec.provider)
+
+
+def _extract_text(content: Any) -> str:
+    """Flatten a LangChain message ``content`` into plain text.
+
+    Vendors differ in shape: a ``str`` (Google), a list of content blocks
+    (Anthropic returns ``[{"type": "text", "text": ...}, ...]``), or otherwise.
+    Pure and total, so the real flattening is exercised without the ``live`` extras.
+    """
     if isinstance(content, str):
         return content
     if isinstance(content, list):

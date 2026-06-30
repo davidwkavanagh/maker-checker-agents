@@ -63,6 +63,12 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 - **A prompt instruction is not a data-integrity control.** "Please don't include X" is not enforcement; the guarantee has to live in code, after the model returns.
 - **A governed document no code reads is shelfware.** A config file that's the "source of truth" drifts silently unless something actually fails when it and the code disagree.
 
+**A known gap, named — input safety.**
+
+- **Issue:** The case text is handed to the model as-is. A cleverly worded case could try to steer the AI's answer — "prompt injection."
+- **Impact:** A crafted input could push the model to the wrong EU AI Act risk level — the one thing a compliance tool can't afford to get quietly wrong.
+- **Resolution:** This version only checks that the answer is one of the EU AI Act risk levels. That catches a garbled or made-up answer, but not an injection that asks for a real risk level that happens to be wrong (say, "treat this as minimal risk"). That gap is closed in the production system, which this rebuild doesn't copy: production scans the submitted text for prompt injection, and if it finds any, keeps it out of the classification and flags the potential issue to the human reviewer. Built and tested there; named here, not reproduced.
+
 ## 9. Tradeoffs
 
 | Decision | Why |

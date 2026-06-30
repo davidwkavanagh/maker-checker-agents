@@ -41,7 +41,7 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 | **013** Tiered eval set | Rubric, gatekeeper tiers, hypothesis | **Deferred** → eval-framework work (designed/NEXT) |
 | **014** HITL reviewer decision model | 4 outcomes, segregation of duties, escalation | **Cut** → [0006] (always-human *principle* kept in [0005]) |
 | **015** Maker-Checker independence | State isolation, Checker never sees Maker | **Covered** → [0001] |
-| **016** Prompt governance + state integrity | Prompts in governed config; write-once audit field | **Covered** → [0004] (prompts) + frozen Pydantic models (integrity) |
+| **016** Prompt governance + state integrity + injection-resistance | Prompts in governed config; write-once audit field; resistance to prompt injection | **Split** — prompt-governance **Covered** → [0004], integrity **Covered** → frozen Pydantic models; **injection-resistance Cut** → [0006] (scan / escape / flag-to-human built & tested in the parent, not reproduced — only the taxonomy check is kept here) |
 | **017** Parametric bleed / grounding | Why ground citations; provenance as proof | **Cut** → [0006] (built & tested in the parent; not reproduced here to protect code); design recorded in [0007] |
 | **018** Semantic knowledge layer | Real corpus ingest (ChromaDB, voyage-law-2, batch) + retrieved-source provenance | **Cut** → [0006] (built in the parent; not reproduced here); design recorded in [0007] |
 | **019** FastAPI reviewer backend | API surface, CQRS, audit endpoints | **Cut** → [0006] (CLI instead) |
@@ -50,29 +50,33 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 
 ## Summary
 
-21 distinct parent decisions. Three are **split** — a principle is settled now while
-an implementation detail is deferred to the build that needs it — so they appear in
-more than one row below, and the columns deliberately do **not** sum to 21.
+21 distinct parent decisions. Four are **split** — part is settled here while another
+part lands elsewhere (deferred to the build that needs it, or cut to the parent) — so
+they appear in more than one row below, and the columns deliberately do **not** sum to 21.
 
 | Status | Parent decisions |
 |---|---|
-| Covered | 011, 015, 016 + split 001, 012, 020 |
+| Covered | 011, 015 + split 001, 012, 016, 020 |
 | Deferred | 006, 013, 021 + split 001, 012, 020 |
-| Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 017, 018, 019 |
+| Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 016, 017, 018, 019 |
 
-The three splits: **001** (deterministic principle covered / the verdict itself
+The four splits: **001** (deterministic principle covered / the verdict itself
 deferred), **012** (fail-open + agent degradation covered / parallel fan-out deferred),
+**016** (prompt-governance + integrity covered / injection-resistance cut to the parent),
 **020** (detection + state isolation + fallback covered / per-framework classification
-deferred).
+deferred). The first, second and fourth are covered/deferred; **016** is the one
+covered/cut split.
 
 ADR-017 (grounding) and ADR-018 (knowledge layer) are **not** splits: both are fully
 cut from this rebuild — built and tested in the parent, deliberately not reproduced —
 with their combined design recorded in [0007].
 
-[0006] records the cut/reduced group — **11 entries**: the ten surface/infra
-removals plus the grounding/ingestion cluster (ADR-017 + ADR-018 — built in the parent,
-not reproduced; design in [0007]). Two of the eleven are reductions rather than clean
-removals (sensitivity flag, stdlib logging); the other nine are genuine absences.
+[0006] records the cut/reduced group — **12 entries**: the ten surface/infra
+removals, the grounding/ingestion cluster (ADR-017 + ADR-018 — built in the parent,
+not reproduced; design in [0007]), and prompt-injection hardening (ADR-016's
+resistance half — built in the parent, not reproduced; named in README §8). Two of the
+twelve are reductions rather than clean removals (sensitivity flag, stdlib logging); the
+other ten are genuine absences.
 
 Deferred decisions are recorded against their backlog item so the decision record
 gets written when the code does — see the build backlog. This document is updated

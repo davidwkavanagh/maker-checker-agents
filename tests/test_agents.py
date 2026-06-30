@@ -13,6 +13,8 @@ from __future__ import annotations
 import inspect
 import json
 import os
+import sys
+import types
 from collections.abc import Callable
 from pathlib import Path
 
@@ -151,6 +153,154 @@ def test_invoke_error_is_failure(monkeypatch: pytest.MonkeyPatch) -> None:
         raise RuntimeError("vendor down")
 
     monkeypatch.setattr(agents, "_invoke", _boom)
+    assert run_maker(CASE, POLICY) is None
+
+
+# --- Real dispatch/parse against a stubbed transport (0008 Decision 1, #519) ---
+# These exercise the REAL _make_client / _extract_text / _parse_output code without
+# the `live` extras or keys — closing the gap where the only test of the real vendor
+# path was the CI-skipped live test (the mirror-test battle scar, README §8 / #519).
+
+
+def _install_fake_vendors(
+    monkeypatch: pytest.MonkeyPatch, content: object
+) -> None:
+    """Stub the lazily-imported vendor + message modules so real `_invoke` runs.
+
+    The fake ChatModel records its construction kwargs and returns a response whose
+    `.content` is whatever shape the test wants (str, or Anthropic-style block list).
+    """
+
+    class _FakeChat:
+        def __init__(self, **kwargs: object) -> None:
+            self.kwargs = kwargs
+
+        def invoke(self, messages: object) -> types.SimpleNamespace:
+            return types.SimpleNamespace(content=content)
+
+    for module_name, class_name in (
+        ("langchain_anthropic", "ChatAnthropic"),
+        ("langchain_google_genai", "ChatGoogleGenerativeAI"),
+    ):
+        module = types.ModuleType(module_name)
+        setattr(module, class_name, _FakeChat)
+        monkeypatch.setitem(sys.modules, module_name, module)
+
+    class _Msg:
+        def __init__(self, content: object) -> None:
+            self.content = content
+
+    messages = types.ModuleType("langchain_core.messages")
+    messages.HumanMessage = _Msg  # type: ignore[attr-defined]
+    messages.SystemMessage = _Msg  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "langchain_core", types.ModuleType("langchain_core"))
+    monkeypatch.setitem(sys.modules, "langchain_core.messages", messages)
+
+
+def test_checker_end_to_end_with_stubbed_anthropic_block_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The Checker is Anthropic, which returns content as a *list of blocks* — the
+    # real production shape. `_invoke` is NOT patched: real dispatch + flatten + parse.
+    payload = [{"type": "text", "text": _ok_payload("limited")}]
+    _install_fake_vendors(monkeypatch, payload)
+    out = run_checker(CASE, POLICY)
+    assert isinstance(out, AgentOutput)
+    assert out.risk_tier == "limited"
+    assert out.articles_cited == ["Article 6", "Annex III"]
+
+
+def test_make_client_dispatches_anthropic(monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_vendors(monkeypatch, "")
+    client = agents._make_client(ModelSpec(provider="anthropic", model="claude-sonnet-4-6"))
+    assert type(client).__name__ == "_FakeChat"
+    assert client.kwargs == {"model": "claude-sonnet-4-6", "temperature": 0}
+
+
+def test_make_client_dispatches_google(monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_vendors(monkeypatch, "")
+    client = agents._make_client(ModelSpec(provider="google", model="gemini-2.5-pro"))
+    assert type(client).__name__ == "_FakeChat"
+    assert client.kwargs == {"model": "gemini-2.5-pro", "temperature": 0}
+
+
+def test_extract_text_passes_through_str() -> None:
+    assert agents._extract_text("hello") == "hello"
+
+
+def test_extract_text_flattens_block_list_and_ignores_non_text() -> None:
+    content = ["a", {"type": "text", "text": "b"}, {"type": "image"}, 123, {"text": "c"}]
+    assert agents._extract_text(content) == "abc"
+
+
+def test_extract_text_falls_back_to_str_for_other_shapes() -> None:
+    assert agents._extract_text({"foo": "bar"}) == str({"foo": "bar"})
+
+
+# --- Parse-boundary behaviour the docstrings/0008 claim but did not test --------
+
+
+def test_json_extracted_from_markdown_fence(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The common real LLM shape: prose + a fenced code block. Exercises the regex
+    # branch of _extract_json that no bare-json test reaches.
+    fenced = f"Here is my classification:\n```json\n{_ok_payload('high')}\n```\n"
+    monkeypatch.setattr(agents, "_invoke", _stub_invoke(fenced))
+    out = run_maker(CASE, POLICY)
+    assert isinstance(out, AgentOutput)
+    assert out.risk_tier == "high"
+
+
+@pytest.mark.parametrize("bad_cited", ['"Article 6"', "{}", "[1, null, true]"])
+def test_malformed_articles_cited_degrades_to_empty_not_failure(
+    monkeypatch: pytest.MonkeyPatch, bad_cited: str
+) -> None:
+    # 0008 Decision 2: a malformed citation list degrades to [], it does NOT fail
+    # the classification. Citations are illustrative, not load-bearing.
+    payload = f'{{"risk_tier": "high", "rationale": "ok", "articles_cited": {bad_cited}}}'
+    monkeypatch.setattr(agents, "_invoke", _stub_invoke(payload))
+    out = run_maker(CASE, POLICY)
+    assert isinstance(out, AgentOutput)
+    assert out.articles_cited == []
+
+
+def test_mixed_articles_cited_keeps_only_strings(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = '{"risk_tier": "high", "rationale": "ok", "articles_cited": [1, "Article 6", null]}'
+    monkeypatch.setattr(agents, "_invoke", _stub_invoke(payload))
+    out = run_maker(CASE, POLICY)
+    assert isinstance(out, AgentOutput)
+    assert out.articles_cited == ["Article 6"]
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '{"risk_tier": "high", "rationale": ""}',
+        '{"risk_tier": "high", "rationale": "   "}',
+        '{"risk_tier": "high"}',
+        '{"risk_tier": "high", "rationale": 5}',
+    ],
+)
+def test_missing_or_empty_rationale_is_failure(
+    monkeypatch: pytest.MonkeyPatch, payload: str
+) -> None:
+    # 0008 Decision 3: success requires a rationale. Empty/whitespace/missing/
+    # non-string rationale → agent failure (None) → routes to the human.
+    monkeypatch.setattr(agents, "_invoke", _stub_invoke(payload))
+    assert run_maker(CASE, POLICY) is None
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '{"rationale": "ok"}',
+        '{"risk_tier": 3, "rationale": "ok"}',
+        '{"risk_tier": null, "rationale": "ok"}',
+    ],
+)
+def test_missing_or_nonstring_tier_is_failure(
+    monkeypatch: pytest.MonkeyPatch, payload: str
+) -> None:
+    monkeypatch.setattr(agents, "_invoke", _stub_invoke(payload))
     assert run_maker(CASE, POLICY) is None
 
 

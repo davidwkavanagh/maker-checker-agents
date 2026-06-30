@@ -39,12 +39,14 @@ the parent built; none belongs in a minimal public engine.
 | **Hosted deployment** | A hosted service with an ephemeral filesystem, EU data-residency config. | Runs from a clean clone. The *principle* (fail-fast config, honest degradation) is kept; the infrastructure is not. |
 | **MCP tool surface** | A least-privilege set of MCP tools exposed to a frontend. | No frontend to serve and no tools to expose. The restraint principle is moot without a surface. |
 | **Real corpus ingestion + grounding** | A pipeline turning regulatory PDFs into a structured vector store (layout parsing → LLM batch extraction → legal-tuned embeddings → ChromaDB), then retrieval-grounding each classification against it with retrieved-source provenance. | **Built and tested in the parent system; not reproduced here** — copying it would expose proprietary code and need a real vector store. The grounding / provenance *design* is recorded in [0007] so the engineering is visible without duplicating it. |
+| **Prompt-injection hardening** | A dedicated defence against a crafted case steering the model: it scans the submitted text for prompt-injection attempts, escapes each field so the model can't read any of it as an instruction, and runs a post-classification check that flags a suspected attempt and routes the case to a human. | **Built and tested in the parent system; not reproduced here.** This rebuild keeps only the taxonomy check — an answer outside the EU AI Act risk levels is rejected — which does **not** stop an injection that asks for a valid-but-wrong level. The production scan-and-flag is named (README §8), not copied. Part of parent ADR-016; see [`adr-lineage.md`](adr-lineage.md). |
 
 **Two of these are reductions, not clean removals** — the sensitivity flag (in
 place of tokenisation) and standard-library logging (in place of hosted tracing) keep
 the minimum the engine needs while dropping the surrounding infrastructure. The other
-nine are genuine absences (real ingestion among them — its grounding/provenance design
-is recorded in [0007], but no retrieval runs here).
+ten are genuine absences (real ingestion among them — its grounding/provenance design
+is recorded in [0007], but no retrieval runs here; and the prompt-injection defence,
+whose absence is named in README §8).
 
 ## Consequences
 
