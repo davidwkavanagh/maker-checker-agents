@@ -6,6 +6,18 @@
 
 ---
 
+## Why I built this
+
+Even before AI was widely adopted, Dev velocity was outpacing Governance. Compliance, Legal and Privacy reviews simply didn't scale at the same rate products were being built. That mismatch turned a process that used to keep pace into a bottleneck, extending time-to-market by months, not because governance is slow or unwilling, but because the ratio broke.
+
+The fix I have seen is that an organization moves Governance further down the product lifecycle, only fully engaging them once products are in the Build stage. In my opinion this fix was wrong. It made changes required by Governance expensive and time-consuming, and turned them into adversaries to overcome.
+
+I believe the fix isn't pushing Governance further down the funnel, it's giving Governance the ability to provide impact at the point of cheapest correction - making them partners at Ideation, not adversaries of a Product Launch. Submission to Governance is mandatory, but a submitter can see their classification and understand the challenges they face before they choose to proceed. They can revise and resubmit, move forward, or decide not to, maybe they were just testing an idea.
+
+The EU AI Act was chosen as the worked example because it represents the most immediate AI-specific regulatory challenge facing organisations in Europe. High-risk classification obligations under Annex III were originally scheduled to apply from August 2026. The Digital Omnibus deferred those specific obligations to December 2027, but August 2026 remains a live date for transparency obligations.
+
+That deferral is the window: organisations that get governance right now will be ready. Those that don't will face the same reactive scramble GDPR triggered in 2018. It's the worked example, not the limit. The same pattern extends to GDPR, DORA and ISO 42001 as the engine grows.
+
 ## 1. The problem
 
 When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer.
@@ -103,7 +115,7 @@ build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/deci
 
 ## Worked example
 
-The configuration and sample cases in this repo use the **EU AI Act** as the worked example — public law, and a genuinely high-stakes classification problem (what risk tier does an AI system fall under). The engine is domain-agnostic; the EU AI Act is how it's shown working, not what it's limited to.
+The EU AI Act is how the engine is *shown* working — public law, high-stakes, concrete. The engine itself is domain-agnostic: the same Maker-Checker pattern applies wherever a classification has to be defensible, not only to regulation.
 
 ## Run it
 
