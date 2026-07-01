@@ -2,21 +2,21 @@
 
 **Independent dual-agent verification for high-stakes AI classification.** Two models from different vendors classify the same case without seeing each other's work; a deterministic check surfaces where they disagree; a human always makes the call. The rules that govern the AI live in configuration, not code.
 
-> 🚧 **Private build in progress.** This README is written spec-first — the arc below describes the *target* product, and the honesty-spine table is its launch state. Every claim in the *RUNS* column is validated against working code **before this repository is made public**; during the private build some are still being wired.
-
 ---
 
 ## Why I built this
 
-Even before AI was widely adopted, Dev velocity was outpacing Governance. Compliance, Legal and Privacy reviews simply didn't scale at the same rate products were being built. That mismatch turned a process that used to keep pace into a bottleneck, extending time-to-market by months, not because governance is slow or unwilling, but because the ratio broke.
+Even before AI was widely adopted, dev velocity was outpacing Governance — Compliance, Legal and Privacy. Those reviews simply didn't scale at the same rate products were being built. That mismatch turned a process that used to keep pace into a bottleneck, extending time-to-market by months, not because Governance is slow or unwilling, but because the ratio broke.
 
-The fix I have seen is that an organization moves Governance further down the product lifecycle, only fully engaging them once products are in the Build stage. In my opinion this fix was wrong. It made changes required by Governance expensive and time-consuming, and turned them into adversaries to overcome.
+The fix I have seen is that an organization moves Governance further down the product lifecycle, only fully engaging them once products are in the build stage. In my opinion this fix was wrong. It made changes required by Governance expensive and time-consuming, and turned them into adversaries to overcome.
 
-I believe the fix isn't pushing Governance further down the funnel, it's giving Governance the ability to provide impact at the point of cheapest correction - making them partners at Ideation, not adversaries of a Product Launch. Submission to Governance is mandatory, but a submitter can see their classification and understand the challenges they face before they choose to proceed. They can revise and resubmit, move forward, or decide not to, maybe they were just testing an idea.
+I believe the fix isn't pushing Governance further down the funnel, it's giving Governance a voice at the point of cheapest correction — making them partners at ideation, not adversaries at launch. Submission to Governance is mandatory, but a submitter can see their classification and understand the challenges they face before they choose to proceed. They can revise and resubmit, move forward, or decide not to — maybe they were just testing an idea.
 
 The EU AI Act was chosen as the worked example because it represents the most immediate AI-specific regulatory challenge facing organisations in Europe. High-risk classification obligations under Annex III were originally scheduled to apply from August 2026. The Digital Omnibus deferred those specific obligations to December 2027, but August 2026 remains a live date for transparency obligations.
 
 That deferral is the window: organisations that get governance right now will be ready. Those that don't will face the same reactive scramble GDPR triggered in 2018. It's the worked example, not the limit. The same pattern extends to GDPR, DORA and ISO 42001 as the engine grows.
+
+This README describes the product as it's designed to work, not necessarily as it fully runs today — what's marked as working is checked against running code, and nothing's claimed as done until it's built. The pattern comes from [Sandra](https://prileco.com), a live EU AI Act governance system I built.
 
 ## 1. The problem
 
@@ -35,7 +35,7 @@ Two agents on **different model vendors** classify the same case:
 
 This is not an invention. It's the **pragmatic application of an established control pattern** — maker-checker / four-eyes, long used in finance and audit — to the specific failure modes of LLMs. The contribution is the engineering that makes it real: hard independence, a deterministic verdict, and honest failure handling.
 
-> **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the parametric-bleed failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
+> **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
 
 > _[visual: demo GIF — Maker-Checker running on a sample case, terminal output]_
 
@@ -43,9 +43,9 @@ This is not an invention. It's the **pragmatic application of an established con
 
 The behaviour of the system — the risk taxonomy, the model assignments, the thresholds, the prompts that frame each agent — lives in a **YAML configuration layer**, not in the Python.
 
-A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how strict the agreement threshold is* by editing config — **config, not code**. The change takes effect **on the next deploy** (not live, not zero-deploy — stated honestly).
+A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how strict the agreement threshold is* by editing config — **config, not code**. The change takes effect **on the next deploy** (not live, not zero-deploy).
 
-This is the most product-leader-relevant asset in the repo: it turns a model pipeline into something a business owner can actually govern.
+It turns a model pipeline into something a business owner can actually govern.
 
 > _[visual: clip — edit a YAML value, behaviour changes]_
 
@@ -63,7 +63,7 @@ A method for knowing whether it works beats a number that asks you to take it on
 
 ## 6. Latency — a decision, not a gap
 
-Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** (fan-out / fan-in) — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor is *(slower model + the explanation step; add retrieval in the grounded parent system)*; divergent cases add human wall-clock, which is accounted for in the TCO method above, not hidden here.
+Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor is *(slower model + the explanation step; add retrieval in the grounded parent system)*; divergent cases add human wall-clock, which is accounted for in the TCO method above, not hidden here.
 
 ## 7. What's next — route before you spend *(designed, not shipped — labelled)*
 
@@ -93,14 +93,11 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 
 ---
 
-## Honesty spine
+## What runs vs what's designed
 
-*This table is the **target launch state** — the bar this repo must clear before it
-goes public. Every RUNS claim is validated against working code first (see the
-banner at the top); it is not a snapshot of the in-progress private build. Current
-build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/decisions/adr-lineage.md).*
+*This table separates what's validated against working code from what's designed but not yet built. The left column only holds claims checked against real code; everything else — including work in progress — sits on the right. Build status is tracked precisely in [`docs/decisions/adr-lineage.md`](docs/decisions/adr-lineage.md).*
 
-| RUNS at launch (validated against code first) | DESIGNED / NEXT (honest roadmap) |
+| RUNS (validated against code) | DESIGNED / NEXT (roadmap) |
 |---|---|
 | Maker-Checker independent verification | Route-before-you-spend router |
 | Human always decides — type-enforced | Multi-framework activation |
