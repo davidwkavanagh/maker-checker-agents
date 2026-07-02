@@ -53,12 +53,14 @@ class AgentOutput(BaseModel):
 class ScopeResult(BaseModel):
     """Outcome of the deterministic scope gate.
 
-    ``proceed`` gates only the *expensive model spend*. ``routed_to_human`` is
-    typed ``Literal[True]`` — the invariant "every case reaches a human, in
-    scope or not" is enforced by the type system, not a comment: it is
-    impossible to construct a ``ScopeResult`` that skips the human.
-    ``sensitive`` is set when the case matches the policy's sensitivity
-    keywords. ``degraded`` marks a gate that failed open on error.
+    ``proceed`` gates only the *expensive model spend*, never the human.
+    ``routed_to_human`` is typed ``Literal[True]``: it is impossible to construct
+    a ``ScopeResult`` — in scope or out — that skips the human. This enforces
+    routing on every result the gate *builds*; it does not promise the pipeline
+    never fails. A run can still fail outright later — both agents down → the
+    runner errors rather than routing an empty case ([0010]), never forcing a
+    verdict through. ``sensitive`` is set when the case matches the policy's
+    sensitivity keywords. ``degraded`` marks a gate that failed open on error.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -88,3 +90,23 @@ class VerdictResult(BaseModel):
     degraded: bool = False
     routed_to_human: Literal[True] = True
     notes: str = ""
+
+
+class PipelineResult(BaseModel):
+    """The end-to-end outcome of one run: scope decision + optional verdict.
+
+    ``verdict`` is ``None`` when the scope gate skipped the agent pair (the case was
+    out of scope — the expensive spend is skipped, [0010] Decision 4). It is a
+    ``VerdictResult`` whenever the pair ran and *at least one* agent classified. If
+    both agents fail there is nothing to review, so the runner raises
+    ``PipelineError`` instead of returning a result ([0010]). ``routed_to_human`` is
+    ``Literal[True]``: every *returned* result reaches a human whether it was
+    classified or skipped — enforced by the type, not a comment.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    case_id: str
+    scope: ScopeResult
+    verdict: VerdictResult | None = None
+    routed_to_human: Literal[True] = True

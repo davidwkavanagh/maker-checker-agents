@@ -31,13 +31,13 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 | **003** Bounded review sessions | Session isolation + status lifecycle | **Cut** → [0006] |
 | **004** Two interface layers | Submitter co-pilot + reviewer UI | **Cut** → [0006] |
 | **005** MCP tool surface | Least-privilege tools to a frontend | **Cut** → [0006] |
-| **006** LangGraph orchestration | Graph runtime for the pipeline | **Deferred** → pipeline build, as a **departure** (plain-Python orchestration, no framework — KISS) |
+| **006** LangGraph orchestration | Graph runtime for the pipeline | **Departure** → [0010] (plain-Python stdlib orchestration, no framework; the stages are discrete node-functions so it is an on-ramp to LangGraph — Sandra takes the framework for durable interrupt/resume + multi-framework routing, both cut here) |
 | **007** LangSmith observability | Hosted tracing + field masking | **Cut** → [0006] (stdlib logging instead) |
 | **008** Supabase brief storage | Persistence + data residency | **Cut** → [0006] |
 | **009** Safe Harbour tokenisation | Strip PII before a provider boundary | **Cut** → [0006] (sensitivity *flag* kept; lesson kept) |
 | **010** Local → hosted deployment | Railway, ephemeral filesystem | **Cut** → [0006] (runs from clean clone) |
-| **011** Tiered decision pipeline | 4 tiers + cross-provider challenge; "what we reject" table | **Covered** → [0001] + [0002] + [0005] |
-| **012** Multi-agent + graceful degradation | Failure modes, parallel fan-out, verdict cap | **Covered** — fail-open → [0003]; agent degradation (out-of-taxonomy / unparseable = failure) → [0008]; verdict cap (degraded run → INCONCLUSIVE, trigger adapted from Node 1.5 to the scope gate) → [0009]. Parallel fan-out still **deferred** → pipeline build (#5) |
+| **011** Tiered decision pipeline | 4 tiers + cross-provider challenge; "what we reject" table | **Covered** → [0001] + [0002] + [0005]; end-to-end flow assembled in [0010] |
+| **012** Multi-agent + graceful degradation | Failure modes, parallel fan-out, verdict cap | **Covered** — fail-open → [0003]; agent degradation (out-of-taxonomy / unparseable = failure) → [0008]; verdict cap (degraded run → INCONCLUSIVE, trigger adapted from Node 1.5 to the scope gate) → [0009]; parallel fan-out (concurrent Maker ‖ Checker, threads) + both-agents-fail → run failure (`PipelineError`, cannot proceed; Sandra's `FAILED` status at this repo's no-persistence scope) → [0010] |
 | **013** Tiered eval set | Rubric, gatekeeper tiers, hypothesis | **Deferred** → eval-framework work (designed/NEXT) |
 | **014** HITL reviewer decision model | 4 outcomes, segregation of duties, escalation | **Cut** → [0006] (always-human *principle* kept in [0005]) |
 | **015** Maker-Checker independence | State isolation, Checker never sees Maker | **Covered** → [0001] |
@@ -50,22 +50,24 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 
 ## Summary
 
-21 distinct parent decisions. Three are **split** — part is settled here while another
+21 distinct parent decisions. Two are **split** — part is settled here while another
 part lands elsewhere (deferred to the build that needs it, or cut to the parent) — so
 they appear in more than one row below, and the columns deliberately do **not** sum to 21.
+One (**006**) is a **departure**: settled here, but *differently* from the parent.
 
 | Status | Parent decisions |
 |---|---|
-| Covered | 001, 011, 015 + split 012, 016, 020 |
-| Deferred | 006, 013, 021 + split 012, 020 |
+| Covered | 001, 011, 012, 015 + split 016, 020 |
+| Departure | 006 → [0010] (framework replaced by stdlib, on-ramp preserved) |
+| Deferred | 013, 021 + split 020 |
 | Cut / reduced | 002, 003, 004, 005, 007, 008, 009, 010, 014, 016, 017, 018, 019 |
 
-The three splits: **012** (fail-open + agent degradation + verdict cap covered /
-parallel fan-out deferred), **016** (prompt-governance + integrity covered /
-injection-resistance cut to the parent), **020** (detection + state isolation +
-fallback covered / per-framework classification deferred). **012** and **020** are
-covered/deferred; **016** is the one covered/cut split. (**001** was a covered/deferred
-split until #4 — the deterministic verdict landed in [0009], so it is now fully covered.)
+The two splits: **016** (prompt-governance + integrity covered / injection-resistance
+cut to the parent), **020** (detection + state isolation + fallback covered /
+per-framework classification deferred). **016** is a covered/cut split; **020** is
+covered/deferred. (**001** was a covered/deferred split until #4 — the deterministic
+verdict landed in [0009]; **012** was covered/deferred until #5 — parallel fan-out
+landed in [0010] — so both are now fully covered.)
 
 ADR-017 (grounding) and ADR-018 (knowledge layer) are **not** splits: both are fully
 cut from this rebuild — built and tested in the parent, deliberately not reproduced —
@@ -91,3 +93,4 @@ as deferred items land.
 [0007]: 0007-grounding-and-retrieved-source-provenance.md
 [0008]: 0008-runnable-agent-layer.md
 [0009]: 0009-deterministic-verdict-and-cap.md
+[0010]: 0010-pipeline-orchestration.md
