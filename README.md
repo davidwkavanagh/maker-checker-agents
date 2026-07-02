@@ -41,9 +41,9 @@ This is not an invention. It's the **pragmatic application of an established con
 
 ## 3. The digital-enablement layer — governance in config, not code
 
-The behaviour of the system — the risk taxonomy, the model assignments, the thresholds, the prompts that frame each agent — lives in a **YAML configuration layer**, not in the Python.
+The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent — lives in a **YAML configuration layer**, not in the Python.
 
-A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how strict the agreement threshold is* by editing config — **config, not code**. The change takes effect **on the next deploy** (not live, not zero-deploy).
+A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next deploy** (not live, not zero-deploy).
 
 It turns a model pipeline into something a business owner can actually govern.
 

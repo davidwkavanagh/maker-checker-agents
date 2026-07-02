@@ -54,3 +54,20 @@ ADR-016 (a write-once audit field via a custom reducer) is *echoed in spirit* he
 by `frozen=True` Pydantic models — immutability after construction, not the same
 mechanism, and there is no audit record in this engine yet. See
 [`adr-lineage.md`](adr-lineage.md).
+
+## Amendment — 2 Jul 2026 (issue #4, [0009])
+
+When this record was written, `agreement.threshold` was declared in policy but read
+by no code — a governed value that was, by this record's own §8 test, shelfware. The
+verdict layer ([0009] Decision 4) now **consumes** it: `verdict.py` reads
+`agreement.threshold` and dispatches on it, and an unrecognised strategy raises. So
+strictness is now genuinely config-*governed*, not just config-*declared*.
+
+One honest bound follows: `exact` is the **only supported strategy** — a deliberate
+governance choice, not a limitation to be grown ([0009] Decision 4 rejects an
+adjacent-tier setting as an anti-feature that would hide material disagreement). The
+"thresholds" plural in this record's Context, and the README §3 line that an owner
+could change *how strict* agreement is, therefore **overclaimed a dial**: there is one
+validated strategy, not a knob to turn. The README §3 line was neutralised in #4 (the
+overclaim removed); the richer §3 rewrite remains on #7. This amendment records the
+true state.
