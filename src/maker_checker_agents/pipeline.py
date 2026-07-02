@@ -76,7 +76,9 @@ def run_pipeline(case: Case, policy: Policy) -> PipelineResult:
     maker, checker = _classify_concurrently(case, policy)
     if maker is None and checker is None:
         # Both models failed — no classification exists to review. Cannot proceed.
-        raise PipelineError(f"both agents failed to classify case {case.case_id!r} — cannot proceed")
+        raise PipelineError(
+            f"both agents failed to classify case {case.case_id!r} — cannot proceed"
+        )
 
     verdict = run_verdict(
         case_id=case.case_id,
