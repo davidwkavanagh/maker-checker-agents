@@ -15,6 +15,8 @@ for how decisions get made and recorded.
 | [0006](0006-inherited-scope-boundaries.md) | Inherited concerns deliberately not built | Accepted |
 | [0007](0007-grounding-and-retrieved-source-provenance.md) | Grounding and retrieved-source provenance | Accepted (design record) |
 | [0008](0008-runnable-agent-layer.md) | The runnable agent layer — run-mode, citation honesty, agent degradation | Accepted |
+| [0009](0009-deterministic-verdict-and-cap.md) | The deterministic verdict — comparison, safety cap, consumed threshold | Accepted |
+| [0010](0010-pipeline-orchestration.md) | Pipeline orchestration — stdlib fan-out, an on-ramp to a framework | Accepted |
 
 Records 0001–0005 are a **backfill**: the decisions were made and the code was
 already adversarially reviewed (commit `9cec880`) before they were written up.
