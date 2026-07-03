@@ -29,15 +29,60 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from typing import Any, assert_never
 
-from .config import ModelSpec, Policy
+from .config import ModelAssignments, ModelSpec, Policy, Provider
 from .models import AgentOutput, Case
 
 logger = logging.getLogger(__name__)
 
 _JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
+
+
+class AdapterPreflightError(Exception):
+    """The environment lacks a secret the configured vendor SDKs need to run.
+
+    Raised before any paid call so a misconfigured environment fails fast with a
+    clear message instead of a doomed vendor call or a raw SDK traceback. A config
+    guard, not a mock ([0008]): it checks presence, it never substitutes a response.
+    """
+
+
+def _required_env_vars(provider: Provider) -> set[str]:
+    """The environment variable(s) ``_make_client`` needs to build ``provider``.
+
+    Mirrors ``_make_client``'s branches exactly — a new ``Provider`` is a mypy error
+    here too, so the key requirement and the client construction cannot drift. A set
+    (not a scalar) because a future vendor may need more than one variable; today
+    each needs exactly one.
+    """
+    if provider == "google":
+        return {"GOOGLE_API_KEY"}
+    if provider == "anthropic":
+        return {"ANTHROPIC_API_KEY"}
+    assert_never(provider)
+
+
+def preflight_environment(models: ModelAssignments) -> None:
+    """Fail fast if the environment lacks a secret the selected models need.
+
+    Vendor-agnostic by construction: the required variables are derived from the
+    configured Maker and Checker providers, so pointing both agents at one vendor in
+    ``policy.yaml`` demands only that vendor's key — config, not code. Raises
+    ``AdapterPreflightError`` naming every missing variable; the caller renders it.
+    """
+    required = (
+        _required_env_vars(models.maker.provider)
+        | _required_env_vars(models.checker.provider)
+    )
+    missing = sorted(var for var in required if not os.environ.get(var))
+    if missing:
+        raise AdapterPreflightError(
+            "missing required environment variable(s) for the selected models: "
+            + ", ".join(missing)
+        )
 
 
 def run_maker(case: Case, policy: Policy) -> AgentOutput | None:

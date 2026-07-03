@@ -22,7 +22,7 @@ import pytest
 
 from maker_checker_agents import agents
 from maker_checker_agents.agents import run_checker, run_maker
-from maker_checker_agents.config import ModelSpec, load_policy
+from maker_checker_agents.config import ModelAssignments, ModelSpec, Provider, load_policy
 from maker_checker_agents.models import AgentOutput, Case
 
 POLICY = load_policy(Path(__file__).resolve().parent.parent / "config" / "policy.yaml")
@@ -302,6 +302,67 @@ def test_missing_or_nonstring_tier_is_failure(
 ) -> None:
     monkeypatch.setattr(agents, "_invoke", _stub_invoke(payload))
     assert run_maker(CASE, POLICY) is None
+
+
+# --- Environment pre-flight (Option E: the adapter owns key requirements) --
+
+
+def _both(provider: Provider) -> ModelAssignments:
+    return ModelAssignments(
+        maker=ModelSpec(provider=provider, model="m"),
+        checker=ModelSpec(provider=provider, model="c"),
+    )
+
+
+def test_preflight_passes_when_all_required_keys_present(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GOOGLE_API_KEY", "g")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "a")
+    agents.preflight_environment(POLICY.models)  # google + anthropic — no raise
+
+
+def test_preflight_raises_naming_every_missing_var(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(agents.AdapterPreflightError) as exc:
+        agents.preflight_environment(POLICY.models)
+    msg = str(exc.value)
+    assert "GOOGLE_API_KEY" in msg and "ANTHROPIC_API_KEY" in msg
+
+
+def test_preflight_derives_keys_from_config_not_hardcoded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Both agents on one vendor must not demand the other vendor's key (config-not-code)."""
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "a")
+    agents.preflight_environment(_both("anthropic"))  # no raise: GOOGLE_API_KEY not required
+
+
+def test_preflight_same_vendor_names_only_that_vendor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(agents.AdapterPreflightError) as exc:
+        agents.preflight_environment(_both("anthropic"))
+    msg = str(exc.value)
+    assert "ANTHROPIC_API_KEY" in msg
+    assert "GOOGLE_API_KEY" not in msg
+
+
+def test_preflight_blocks_on_partial_keys(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One key present, one missing still blocks — and names only the missing one."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "g")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(agents.AdapterPreflightError) as exc:
+        agents.preflight_environment(POLICY.models)  # google + anthropic
+    msg = str(exc.value)
+    assert "ANTHROPIC_API_KEY" in msg
+    assert "GOOGLE_API_KEY" not in msg  # the present key is not named
 
 
 # --- The real artifact: a live cross-vendor call (skipped in CI) -----------

@@ -44,7 +44,7 @@ was missed by accident. Cuts and deferrals are decisions, not gaps.
 | **016** Prompt governance + state integrity + injection-resistance | Prompts in governed config; write-once audit field; resistance to prompt injection | **Split** — prompt-governance **Covered** → [0004], integrity **Covered** → frozen Pydantic models; **injection-resistance Cut** → [0006] (scan / escape / flag-to-human built & tested in the parent, not reproduced — only the taxonomy check is kept here) |
 | **017** Parametric bleed / grounding | Why ground citations; provenance as proof | **Cut** → [0006] (built & tested in the parent; not reproduced here to protect code); design recorded in [0007] |
 | **018** Semantic knowledge layer | Real corpus ingest (ChromaDB, voyage-law-2, batch) + retrieved-source provenance | **Cut** → [0006] (built in the parent; not reproduced here); design recorded in [0007] |
-| **019** FastAPI reviewer backend | API surface, CQRS, audit endpoints | **Cut** → [0006] (CLI instead) |
+| **019** FastAPI reviewer backend | API surface, CQRS, audit endpoints | **Cut** → [0006] (CLI instead — the single surface, built in [0011]) |
 | **020** Multi-framework architecture | `framework_triggers`, Node 1.5 detection, clean-room state, fallback | **Covered** → [0002] (gate) + [0001] (state isolation) + [0003] (fallback); per-framework *classification* **deferred** (designed/NEXT) |
 | **021** Rubric scorer governance | Independent third-model scorer, DCP-governed prompt | **Deferred** → eval-framework work (designed/NEXT) |
 
@@ -94,3 +94,4 @@ as deferred items land.
 [0008]: 0008-runnable-agent-layer.md
 [0009]: 0009-deterministic-verdict-and-cap.md
 [0010]: 0010-pipeline-orchestration.md
+[0011]: 0011-cli-and-demo-cases.md
