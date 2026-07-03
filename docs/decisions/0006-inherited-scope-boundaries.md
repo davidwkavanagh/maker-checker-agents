@@ -40,13 +40,15 @@ the parent built; none belongs in a minimal public engine.
 | **MCP tool surface** | A least-privilege set of MCP tools exposed to a frontend. | No frontend to serve and no tools to expose. The restraint principle is moot without a surface. |
 | **Real corpus ingestion + grounding** | A pipeline turning regulatory PDFs into a structured vector store (layout parsing → LLM batch extraction → legal-tuned embeddings → ChromaDB), then retrieval-grounding each classification against it with retrieved-source provenance. | **Built and tested in the parent system; not reproduced here** — copying it would expose proprietary code and need a real vector store. The grounding / provenance *design* is recorded in [0007] so the engineering is visible without duplicating it. |
 | **Prompt-injection hardening** | A dedicated defence against a crafted case steering the model: it scans the submitted text for prompt-injection attempts, escapes each field so the model can't read any of it as an instruction, and runs a post-classification check that flags a suspected attempt and routes the case to a human. | **Built and tested in the parent system; not reproduced here.** This rebuild keeps only the taxonomy check — an answer outside the EU AI Act risk levels is rejected — which does **not** stop an injection that asks for a valid-but-wrong level. The production scan-and-flag is named (README §8), not copied. Part of parent ADR-016; see [`adr-lineage.md`](adr-lineage.md). |
+| **Node-1 confidence scoring / quality-halt** | A deterministic pre-classification score over the brief's fields (weighted), with a **quality-halt**: below a confidence threshold the case stops and is returned to the submitter *before* any model spend. | **Built and tested in the parent system; not reproduced here.** The scope gate ([0002]) is this repo's only pre-classification stage — keyword/domain triage, not a confidence score. A scoring-and-halt stage over six fixed fictional cases would be untested ceremony that buys nothing. Part of parent ADR-011, whose tier-pipeline structure is otherwise **Covered**; see [`adr-lineage.md`](adr-lineage.md). |
 
 **Two of these are reductions, not clean removals** — the sensitivity flag (in
 place of tokenisation) and standard-library logging (in place of hosted tracing) keep
 the minimum the engine needs while dropping the surrounding infrastructure. The other
-ten are genuine absences (real ingestion among them — its grounding/provenance design
-is recorded in [0007], but no retrieval runs here; and the prompt-injection defence,
-whose absence is named in README §8).
+eleven are genuine absences (real ingestion among them — its grounding/provenance design
+is recorded in [0007], but no retrieval runs here; the prompt-injection defence, whose
+absence is named in README §8; and Node-1 confidence scoring, whose parent tier-pipeline
+is otherwise marked Covered in [`adr-lineage.md`](adr-lineage.md)).
 
 ## Consequences
 
@@ -78,6 +80,17 @@ defends). Only the run-mode is corrected; the scope cuts in the table stand
 unchanged. Note "**Offline by default**" in the *Observability* row still holds —
 there it means no hosted trace boundary to mask, not the absence of API calls. See
 [0008].
+
+## Amendment — 2026-07-03 (#7, honesty audit)
+
+Added the **Node-1 confidence scoring / quality-halt** row above. It is part of parent
+ADR-011 (tiered decision pipeline) and had been silently absent — reproduced nowhere and
+recorded in no cut, while [`adr-lineage.md`](adr-lineage.md) marked ADR-011 flatly
+"Covered." A grounded code audit for #7 caught it: the repo has no confidence scoring of
+any kind (the scope gate is keyword/domain triage, not a score). This amendment records
+the cut; the lineage 011 row is now a **split** (tier pipeline covered / confidence-halt
+cut to the parent). Cut count 12 → 13; genuine absences 10 → 11. No behaviour change —
+a documentation correction, made before the repo went public.
 
 [0002]: 0002-deterministic-config-driven-scope-gate.md
 [0005]: 0005-type-enforced-hitl.md
