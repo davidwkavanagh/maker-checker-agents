@@ -15,6 +15,9 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.scripts]
+mca = "maker_checker_agents.cli:main"
+
 [project.optional-dependencies]
 # Real frontier-model calls — required to run the Maker + Checker agents (your own keys; see 0008).
 live = [

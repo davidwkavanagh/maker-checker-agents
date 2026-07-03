@@ -116,7 +116,21 @@ The EU AI Act is how the engine is *shown* working — public law, high-stakes, 
 
 ## Run it
 
-> _Quickstart lands here once the CLI is built — one command, runs with your own Google + Anthropic API keys (no offline mode)._
+The CLI is the only surface ([0006](docs/decisions/0006-inherited-scope-boundaries.md)) — two verbs that mirror the honesty spine: a free, keyless map, and a live, costed proof.
+
+```bash
+git clone https://github.com/davidwkavanagh/maker-checker-agents
+cd maker-checker-agents
+pip install -e '.[live]'          # editable install, run from the clone
+
+mca list                          # the map: every demo case + its illustrative tier — free, no keys
+
+export GOOGLE_API_KEY=...          # the Maker  (Gemini)
+export ANTHROPIC_API_KEY=...       # the Checker (Claude)
+mca run credit-scoring            # the proof: one case, live — both agents, the verdict, routed to a human
+```
+
+`mca list` needs no keys — the scope map is deterministic. `mca run <case-id>` makes real, paid calls to both vendors ([0008](docs/decisions/0008-runnable-agent-layer.md)); there is no offline or replay mode, and missing keys are caught before any spend. Run from the clone (or `python -m maker_checker_agents …` if the `mca` script isn't on your PATH).
 
 ## License
 

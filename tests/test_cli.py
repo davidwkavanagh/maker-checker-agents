@@ -32,6 +32,8 @@ Locked constraints these tests guard:
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -49,6 +51,7 @@ from maker_checker_agents.models import (
 )
 from maker_checker_agents.pipeline import PipelineError
 from maker_checker_agents.scope_gate import run_scope_gate
+from maker_checker_agents.verdict import run_verdict
 
 POLICY = load_policy(Path(__file__).resolve().parent.parent / "config" / "policy.yaml")
 
@@ -105,7 +108,9 @@ def _result(
     return PipelineResult(case_id="c-in", scope=scope, verdict=vr)
 
 
-def _set_keys(monkeypatch: pytest.MonkeyPatch, google: str = "g-key", anthropic: str = "a-key") -> None:
+def _set_keys(
+    monkeypatch: pytest.MonkeyPatch, google: str = "g-key", anthropic: str = "a-key"
+) -> None:
     monkeypatch.setenv(_GOOGLE, google)
     monkeypatch.setenv(_ANTHROPIC, anthropic)
 
@@ -120,11 +125,13 @@ class _Recorder:
 
     def __init__(self, result: PipelineResult | None = None, raises: Exception | None = None):
         self.called = False
+        self.called_with_case: str | None = None
         self._result = result
         self._raises = raises
 
     def __call__(self, case: Case, policy: object) -> PipelineResult:
         self.called = True
+        self.called_with_case = case.case_id
         if self._raises is not None:
             raise self._raises
         assert self._result is not None
@@ -178,7 +185,9 @@ def test_get_demo_case_lookup() -> None:
 def test_render_result_shows_both_agents_full_decision() -> None:
     maker = _agent("high", cited=["Article 6"])
     checker = _agent("limited", cited=["Article 52"])
-    out = cli.render_result(_result(verdict=Verdict.DIVERGENT, maker=maker, checker=checker))
+    out = cli.render_result(
+        _result(verdict=Verdict.DIVERGENT, maker=maker, checker=checker), POLICY
+    )
     # both tiers, both rationales, both citation sets — the reviewer sees everything
     assert "high" in out and "limited" in out
     assert maker.rationale in out and checker.rationale in out
@@ -188,7 +197,8 @@ def test_render_result_shows_both_agents_full_decision() -> None:
 
 def test_render_result_always_shows_routed_to_human() -> None:
     out = cli.render_result(
-        _result(verdict=Verdict.CONSISTENT, maker=_agent("high"), checker=_agent("high"))
+        _result(verdict=Verdict.CONSISTENT, maker=_agent("high"), checker=_agent("high")),
+        POLICY,
     )
     assert "human" in out.lower()
 
@@ -199,7 +209,8 @@ def test_render_result_includes_citation_honesty_note() -> None:
             verdict=Verdict.CONSISTENT,
             maker=_agent("high", cited=["Article 6"]),
             checker=_agent("high", cited=["Article 6"]),
-        )
+        ),
+        POLICY,
     )
     low = out.lower()
     assert "illustrative" in low or "ungrounded" in low
@@ -208,7 +219,14 @@ def test_render_result_includes_citation_honesty_note() -> None:
 
 def test_render_result_out_of_scope_has_no_verdict_but_routes() -> None:
     out = cli.render_result(
-        _result(verdict=Verdict.CONSISTENT, maker=None, checker=None, proceed=False, verdict_present=False)
+        _result(
+            verdict=Verdict.CONSISTENT,
+            maker=None,
+            checker=None,
+            proceed=False,
+            verdict_present=False,
+        ),
+        POLICY,
     )
     low = out.lower()
     assert "out of scope" in low or "not classified" in low or "skipped" in low
@@ -217,16 +235,24 @@ def test_render_result_out_of_scope_has_no_verdict_but_routes() -> None:
     assert "consistent" not in low and "divergent" not in low
 
 
-def test_render_result_surfaces_degraded() -> None:
-    out = cli.render_result(
-        _result(
-            verdict=Verdict.INCONCLUSIVE,
-            maker=_agent("high"),
-            checker=None,
-            degraded=True,
-        )
+def test_render_result_surfaces_a_degraded_capped_run() -> None:
+    """A degraded (fail-open) run must be visibly flagged as capped.
+
+    Built via the *real* ``run_verdict`` producer, not a hand-set ``degraded`` flag —
+    ``render_result`` never reads that flag; degradation reaches output only through
+    the authoritative ``notes`` the verdict layer writes on the capped path.
+    """
+    scope = ScopeResult(applicable_frameworks=["eu_ai_act"], proceed=True, degraded=True)
+    vr = run_verdict(
+        case_id="c-in",
+        maker=_agent("high"),
+        checker=_agent("high"),
+        degraded=True,
+        policy=POLICY,
     )
-    assert "degraded" in out.lower() or "inconclusive" in out.lower()
+    out = cli.render_result(PipelineResult(case_id="c-in", scope=scope, verdict=vr), POLICY).lower()
+    assert "degraded" in out  # surfaced via the authoritative note
+    assert "inconclusive" in out  # the safety cap
 
 
 def test_render_pipeline_error_is_a_designed_message_not_a_traceback() -> None:
@@ -300,11 +326,13 @@ def test_run_renders_full_result(
         maker=_agent("high", cited=["Article 6"]),
         checker=_agent("limited", cited=["Article 52"]),
     )
-    monkeypatch.setattr(cli, "run_pipeline", _Recorder(result=result))
+    recorder = _Recorder(result=result)
+    monkeypatch.setattr(cli, "run_pipeline", recorder)
 
     rc = cli.main(["run", DEMO_CASES[0].case.case_id])
 
     assert rc == 0
+    assert recorder.called_with_case == DEMO_CASES[0].case.case_id
     out = capsys.readouterr().out
     assert "high" in out and "limited" in out
     assert "human" in out.lower()
@@ -350,3 +378,93 @@ def test_no_api_key_value_is_ever_printed(
 def test_no_args_shows_usage_nonzero(capsys: pytest.CaptureFixture[str]) -> None:
     rc = cli.main([])
     assert rc != 0
+
+
+def test_render_result_renders_verdict_notes() -> None:
+    """F2: render surfaces the verdict layer's authoritative note, not a hand-rolled banner."""
+    scope = ScopeResult(applicable_frameworks=["eu_ai_act"], proceed=True)
+    vr = VerdictResult(
+        case_id="c-in",
+        verdict=Verdict.INCONCLUSIVE,
+        maker=_agent("high"),
+        checker=None,
+        notes="one or both agents produced no classification",
+    )
+    out = cli.render_result(PipelineResult(case_id="c-in", scope=scope, verdict=vr), POLICY)
+    assert "one or both agents produced no classification" in out
+
+
+def test_run_malformed_policy_shows_designed_message_not_traceback(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """F1: a missing/malformed policy renders a clean message, never a raw traceback."""
+    _set_keys(monkeypatch)
+    monkeypatch.setattr(cli, "_POLICY_PATH", tmp_path / "does-not-exist.yaml")
+    monkeypatch.setattr(
+        cli, "run_pipeline", _Recorder(result=_result(maker=_agent("high"), checker=_agent("high")))
+    )
+
+    rc = cli.main(["run", DEMO_CASES[0].case.case_id])
+
+    assert rc != 0
+    err = capsys.readouterr().err.lower()
+    assert "cannot run" in err
+    assert "traceback" not in err
+
+
+def test_render_result_surfaces_the_sensitivity_flag() -> None:
+    """0006: the sensitivity flag is a retained reduction that MUST surface on the CLI."""
+    scope = ScopeResult(applicable_frameworks=["eu_ai_act"], proceed=True, sensitive=True)
+    vr = VerdictResult(
+        case_id="c-in", verdict=Verdict.CONSISTENT, maker=_agent("high"), checker=_agent("high")
+    )
+    out = cli.render_result(PipelineResult(case_id="c-in", scope=scope, verdict=vr), POLICY).lower()
+    assert "sensitive" in out  # the retained-reduction flag surfaces
+    assert "eu_ai_act" in out  # matched framework surfaced too (scope context)
+
+
+def test_render_result_out_of_scope_surfaces_sensitivity() -> None:
+    """The sensitivity flag surfaces on the out-of-scope path too (audit-added code)."""
+    scope = ScopeResult(applicable_frameworks=[], proceed=False, sensitive=True)
+    out = cli.render_result(
+        PipelineResult(case_id="c-oos", scope=scope, verdict=None), POLICY
+    ).lower()
+    assert "out of scope" in out or "skipped" in out
+    assert "sensitive" in out
+
+
+def test_render_result_consistent_shows_agreed_tier_and_verdict_word() -> None:
+    """Agreement is the rubber-stamp case — the render MUST show the verdict and the agreed tier."""
+    out = cli.render_result(
+        _result(verdict=Verdict.CONSISTENT, maker=_agent("high"), checker=_agent("high")),
+        POLICY,
+    )
+    assert "consistent" in out.lower()
+    assert "high" in out
+
+
+def test_list_shows_each_case_expected_tier_and_out_of_scope_label(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Bind the map to per-row tier values and the out-of-scope label.
+
+    A mislabeled risk tier on the first compliance-facing artifact is legally
+    consequential; asserting only case_ids (as the other list tests do) misses it.
+    """
+    cli.main(["list"])
+    lines = capsys.readouterr().out.splitlines()
+    for demo in DEMO_CASES:
+        row = next(line for line in lines if demo.case.case_id in line)
+        expected = demo.expected_tier if demo.expected_tier is not None else "out of scope"
+        assert expected in row, f"{demo.case.case_id} row is missing {expected!r}"
+
+
+def test_python_m_invocation_runs_list() -> None:
+    """The `python -m maker_checker_agents` fallback the ACs imply — exercised end to end."""
+    result = subprocess.run(
+        [sys.executable, "-m", "maker_checker_agents", "list"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert DEMO_CASES[0].case.case_id in result.stdout

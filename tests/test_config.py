@@ -24,6 +24,20 @@ def test_missing_file_fails_fast() -> None:
         load_policy("does/not/exist.yaml")
 
 
+def test_undecodable_file_is_config_error(tmp_path: Path) -> None:
+    """A non-UTF-8 (UTF-16/BOM) policy fails with a clear message, not a raw UnicodeDecodeError."""
+    bad = tmp_path / "policy.yaml"
+    bad.write_bytes(b"\xff\xfe\x00 not utf-8")
+    with pytest.raises(ConfigError, match="could not be read"):
+        load_policy(bad)
+
+
+def test_unreadable_path_is_config_error(tmp_path: Path) -> None:
+    """A path that exists but cannot be read (a directory) is a ConfigError, not a raw OSError."""
+    with pytest.raises(ConfigError, match="could not be read"):
+        load_policy(tmp_path)  # a directory: exists() is True, read_text raises IsADirectoryError
+
+
 def test_invalid_policy_fails_validation(tmp_path: Path) -> None:
     bad = tmp_path / "policy.yaml"
     bad.write_text("risk_taxonomy: []\n")  # empty taxonomy + missing required blocks

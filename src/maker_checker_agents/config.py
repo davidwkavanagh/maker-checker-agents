@@ -97,7 +97,12 @@ def load_policy(path: str | Path) -> Policy:
     if not file.exists():
         raise ConfigError(f"policy file not found: {file}")
     try:
-        raw: Any = yaml.safe_load(file.read_text())
+        raw: Any = yaml.safe_load(file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        # e.g. a UTF-16/BOM file from a non-technical owner's editor, a bad checkout
+        # (directory), or a permission-restricted clone. Fail with a clear message,
+        # not a raw traceback — the loader's contract, which the CLI relies on.
+        raise ConfigError(f"policy file could not be read: {exc}") from exc
     except yaml.YAMLError as exc:
         raise ConfigError(f"policy file is not valid YAML: {exc}") from exc
     if not isinstance(raw, dict):
