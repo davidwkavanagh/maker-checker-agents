@@ -20,7 +20,7 @@ This README describes the product as it's designed to work, not necessarily as i
 
 ## 1. The problem
 
-When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer.
+When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer. Under the EU AI Act, a wrong high-risk classification carries fines up to €15M or 3% of global turnover (Art. 99) — the failure mode this pattern exists to reduce.
 
 The need isn't a smarter single model. It's a *process* that produces an independent second judgement, makes disagreement visible, and keeps a human accountable for the decision.
 
@@ -31,43 +31,43 @@ Two agents on **different model vendors** classify the same case:
 - **Maker** proposes a classification.
 - **Checker** classifies the same input **without ever seeing the Maker's output** — independence is enforced by state isolation, not by asking the model nicely.
 - A **deterministic, non-LLM verdict** compares the two: *consistent*, *divergent*, or *inconclusive*. The comparison is code, not a third model — it can't hallucinate its own conclusion.
-- **Graceful degradation:** if one agent fails, the pipeline doesn't. The case proceeds to a human with the verdict marked degraded.
+- **Graceful degradation:** if one agent fails, the pipeline doesn't. The case proceeds to a human with the verdict capped to *inconclusive* — the surviving agent's classification can't stand in for a second opinion.
+
+Independence here is **structural** — a state boundary in code, not a "please don't peek" instruction — so an auditor can *verify* it held, instead of taking the model's word that it did.
 
 This is not an invention. It's the **pragmatic application of an established control pattern** — maker-checker / four-eyes, long used in finance and audit — to the specific failure modes of LLMs. The contribution is the engineering that makes it real: hard independence, a deterministic verdict, and honest failure handling.
 
 > **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
 
-> _[visual: demo GIF — Maker-Checker running on a sample case, terminal output]_
-
-## 3. The digital-enablement layer — governance in config, not code
+## 3. Governance in config, not code
 
 The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent — lives in a **YAML configuration layer**, not in the Python.
 
-A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next deploy** (not live, not zero-deploy).
+A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next run** — config is read fresh at startup, not hot-reloaded.
 
 It turns a model pipeline into something a business owner can actually govern.
 
-> _[visual: clip — edit a YAML value, behaviour changes]_
+## 4. What it costs — the cost model a buyer has to build *(not a number on a random Tuesday)*
 
-## 4. What it costs — a TCO method *(not a number on a random Tuesday)*
+Running two models instead of one has a cost, and a serious buyer will ask what it is. There's no honest single figure — there's a **set of drivers you have to model**: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the human-in-the-loop cycles that divergence triggers.**
 
-Running two models instead of one has a cost, and a serious buyer will ask what it is. This section is a **costing method**, not a hardcoded figure: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the human-in-the-loop cycles that divergence triggers.**
+Point those drivers at *your* volumes and you get a P&L line item you can defend — which beats a number pulled from one run.
 
-The output is a model you can point at *your* volumes to project a P&L line item at scale.
+## 5. How it's measured — the evaluation the product needs *(method, not published accuracy %s)*
 
-## 5. How it's measured — an evaluation framework *(method, not published accuracy %s)*
-
-Claiming an accuracy number on a small set looks fabricated. Instead this describes the **evaluation pipeline architecture**: drift tracking over time, precision/recall against a golden set, and the **single-vs-dual delta threshold** — the measured question of whether the second agent actually earns its cost.
+Claiming an accuracy number on a small fixture set is vanity — it reads as fabricated because it is. The actual product requirement is an **evaluation pipeline**: drift tracking over time, precision/recall against a golden set, and the **single-vs-dual delta threshold** — the measured question of whether the second agent actually earns its cost. That pipeline is designed, not built here — it lands with the eval work (tracked as deferred in the lineage).
 
 A method for knowing whether it works beats a number that asks you to take it on faith.
 
 ## 6. Latency — a decision, not a gap
 
-Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor is *(slower model + the explanation step; add retrieval in the grounded parent system)*; divergent cases add human wall-clock, which is accounted for in the TCO method above, not hidden here.
+Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor here is the **slower model** alone — the verdict and its rendering are instant, deterministic code; *the grounded parent system adds retrieval and an LLM explanation step on top of that*. Divergent cases add human wall-clock, which is accounted for in the cost model above, not hidden here.
 
-## 7. What's next — route before you spend *(designed, not shipped — labelled)*
+## 7. Route before you spend — the scope gate *(runs; the semantic upgrade is next)*
 
-A cheap, config-driven router that triages cases up front, so you don't pay two frontier models to classify inputs that obviously don't apply. **Designed, not built** — it's on the roadmap, called out honestly rather than implied.
+A cheap, deterministic, config-driven **scope gate** triages every case up front, so you don't pay two frontier models to classify inputs that are obviously out of scope — those skip the pair and route straight to a human. That gate runs today (keyword/domain matching against the config).
+
+**What's next** is the *precision* upgrade: a semantic/vector router that also catches paraphrases the literal vocabulary misses — designed, not built, called out honestly rather than implied.
 
 ## 8. What I learned building it
 
@@ -87,7 +87,7 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 |---|---|
 | Two vendors, not two of the same model | Correlated errors defeat the point of a second opinion |
 | Deterministic verdict, not an LLM judge | The thing that decides agreement can't be allowed to hallucinate |
-| Config-driven router (next), not an LLM router | Triage should be cheap and predictable |
+| Deterministic, config-driven triage, not an LLM router | The gate that decides whether to spend should be cheap and predictable, not another model call |
 | RAG grounding, not full-context *(built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md))* | Cost and focus — retrieve what's relevant, don't pay for the whole corpus |
 | Parallel, not sequential | Independence without paying latency twice |
 
@@ -99,10 +99,10 @@ A cheap, config-driven router that triages cases up front, so you don't pay two 
 
 | RUNS (validated against code) | DESIGNED / NEXT (roadmap) |
 |---|---|
-| Maker-Checker independent verification | Route-before-you-spend router |
-| Human always decides — type-enforced | Multi-framework activation |
-| Governance in config (config-not-code, validated at startup) | Grounding *hardening* + drift detection (base grounding built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) |
-| | Cost-optimised expansion |
+| Maker-Checker independent verification | Semantic/vector scope router (precision upgrade) |
+| Deterministic scope gate — route-before-you-spend triage | Multi-framework activation |
+| Human always decides — type-enforced | Grounding *hardening* + drift detection (base grounding built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) |
+| Governance in config (config-not-code, validated at startup) | Cost-optimised expansion |
 
 *If a claim can't sit cleanly on the left, it goes on the right with the tense to match.*
 
