@@ -9,7 +9,7 @@ this repo, so the inheritance is provable rather than asserted. Each parent
 decision is one of:
 
 - **Covered** — the idea lives here, recorded in one of this repo's decision
-  records ([0001](0001-cross-vendor-agent-independence.md)–[0009](0009-deterministic-verdict-and-cap.md)).
+  records ([0001](0001-cross-vendor-agent-independence.md)–[0011](0011-cli-and-demo-cases.md)).
 - **Deferred** — the idea is coming to this engine, but its decision record is
   written *with* the code that implements it (writing it now would be fiction).
   Tracked against a backlog item.

@@ -169,6 +169,16 @@ def test_case_set_includes_a_real_out_of_scope_case() -> None:
     assert all(d.expected_tier is None for d in skipped), "out-of-scope cases carry no tier"
 
 
+def test_bank_meeting_summariser_stays_out_of_scope() -> None:
+    # Per-case pin, not just the existential guard above: the scope gate now reads
+    # data_subjects, so a future edit to that field must not silently flip the repo's
+    # only out-of-scope demo case in-scope (which the existential check wouldn't catch
+    # if a new out-of-scope case were added alongside).
+    demo = get_demo_case("bank-meeting-summariser")
+    assert demo is not None
+    assert run_scope_gate(demo.case, POLICY).proceed is False
+
+
 def test_case_set_includes_a_divergence_designed_case() -> None:
     assert any(demo.designed_to_diverge for demo in DEMO_CASES)
 

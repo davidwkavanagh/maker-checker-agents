@@ -29,7 +29,15 @@ _WORD = re.compile(r"[a-z0-9]+")
 
 
 def _tokens(case: Case) -> set[str]:
-    blob = " ".join([case.purpose, case.description, case.domain, *case.data_types]).lower()
+    # All case text — including data_subjects (the "who") — feeds BOTH sensitivity and
+    # framework matching. Widening framework matching this way is deliberate and fail-safe:
+    # it can only *add* tokens, so over-inclusion at worst wastes model spend, it never
+    # skips the human (the asymmetric-risk rule). Both directions are bound by tests: the
+    # widening itself (test_scope_gate) and the demo out-of-scope case, pinned per-case
+    # (test_cli) so a data_subjects edit can't silently flip it in-scope.
+    blob = " ".join(
+        [case.purpose, case.description, case.domain, *case.data_types, *case.data_subjects]
+    ).lower()
     return set(_WORD.findall(blob))
 
 

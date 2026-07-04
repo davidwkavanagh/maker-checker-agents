@@ -17,6 +17,7 @@ for how decisions get made and recorded.
 | [0008](0008-runnable-agent-layer.md) | The runnable agent layer — run-mode, citation honesty, agent degradation | Accepted |
 | [0009](0009-deterministic-verdict-and-cap.md) | The deterministic verdict — comparison, safety cap, consumed threshold | Accepted |
 | [0010](0010-pipeline-orchestration.md) | Pipeline orchestration — stdlib fan-out, an on-ramp to a framework | Accepted |
+| [0011](0011-cli-and-demo-cases.md) | The CLI — two verbs + a config-driven pre-flight, and the demo cases | Accepted |
 
 Records 0001–0005 are a **backfill**: the decisions were made and the code was
 already adversarially reviewed (commit `9cec880`) before they were written up.

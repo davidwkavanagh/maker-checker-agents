@@ -111,10 +111,12 @@ surface, so a computed-but-unrendered flag would be exactly the shelfware a gove
 artifact becomes when nothing reads it. Surfacing it is what makes the record true.
 
 *Documented boundary, not hardened (F2, security review):* the agents' `rationale`
-and `articles_cited` are model-generated and printed verbatim. With static fixtures
-there is no untrusted input, so a terminal-escape spoof cannot occur here; a
-deployment that renders **untrusted** case briefs should strip control characters
-first. This is called out at the render site and left un-hardened deliberately —
+and `articles_cited` are **live model output**, printed verbatim — so the untrusted
+channel is the model's *response*, not the (trusted) demo case. A model can emit
+C0/ANSI control bytes to visually spoof the verdict line regardless of how static the
+input case is; with no attacker-controlled model deployment here that spoof is out of
+scope, and a deployment rendering untrusted model output should strip control
+characters first. This is called out at the render site and left un-hardened deliberately —
 building the defence for a threat this artifact's shape cannot present would be the
 gold-plating this repo argues against (proof, not platform). A precise, scoped note
 is the stronger signal.

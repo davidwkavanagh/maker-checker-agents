@@ -68,6 +68,38 @@ def test_sensitivity_keyword_flags_case() -> None:
     assert result.sensitive is True
 
 
+def test_sensitivity_flag_scans_data_subjects() -> None:
+    # The sensitive marker lives ONLY in data_subjects — the field most likely to
+    # carry a vulnerable-population signal ("children"/"minors") — not in the
+    # purpose/description text. The gate must still flag it.
+    case = Case(
+        case_id="c7",
+        system_name="Learning tracker",
+        purpose="assess pupil learning progress over a term",
+        domain="education",
+        data_subjects=["children"],
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True  # in scope via the education domain
+    assert result.sensitive is True  # flagged from data_subjects alone
+
+
+def test_framework_match_from_data_subjects_alone() -> None:
+    # Binds the deliberate widening: the token blob feeds framework matching too, so a
+    # case whose purpose/domain match no trigger is still pulled IN scope when data_subjects
+    # carries a governed signal. Splitting the token sources would break this silently.
+    case = Case(
+        case_id="c8",
+        system_name="Generic assistant",
+        purpose="summarise documents for the user",
+        domain="consumer",  # not a trigger domain
+        data_subjects=["healthcare patients"],  # "healthcare" is the only governed signal
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True
+    assert "eu_ai_act" in result.applicable_frameworks
+
+
 def test_gate_fails_open_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(*_args: object, **_kwargs: object) -> bool:
         raise RuntimeError("boom")
