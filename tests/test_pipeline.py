@@ -281,8 +281,9 @@ def test_result_carries_scope_verdict_and_correct_attribution(
 def test_sensitive_flag_propagates_to_result(monkeypatch: pytest.MonkeyPatch) -> None:
     # A compliance-facing field: the scope gate sets sensitive=True on a sensitivity
     # keyword (here "minors", in the purpose — the gate scans purpose/description/
-    # domain/data_types/data_subjects) and the runner must carry it out on the
-    # result. No other test exercises sensitive=True, so a dropped flag would ship silently.
+    # domain/data_types/data_subjects) and the runner must carry it out on the result.
+    # Its companion test_sensitive_flag_from_data_subjects_propagates covers the same
+    # propagation when the keyword arrives via data_subjects instead of the purpose.
     case = Case(
         case_id="c-sens",
         system_name="Applicant ranker",
