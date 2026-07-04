@@ -37,6 +37,8 @@ Independence here is **structural** — a state boundary in code, not a "please 
 
 This is not an invention. It's the **pragmatic application of an established control pattern** — maker-checker / four-eyes, long used in finance and audit — to the specific failure modes of LLMs. The contribution is the engineering that makes it real: hard independence, a deterministic verdict, and honest failure handling.
 
+By default the two agents run on different vendors — Google and Anthropic — so the verdict doesn't rest on any single vendor's judgement. That pairing is set in config; enforcing it, or adding a third vendor, would take code.
+
 > **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
 
 ## 3. Governance in config, not code
@@ -49,13 +51,13 @@ It turns a model pipeline into something a business owner can actually govern.
 
 ## 4. What it costs — the cost model a buyer has to build *(not a number on a random Tuesday)*
 
-Running two models instead of one has a cost, and a serious buyer will ask what it is. There's no honest single figure — there's a **set of drivers you have to model**: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the human-in-the-loop cycles that divergence triggers.**
+Running two models instead of one has a cost, and a serious buyer will ask what it is. There's no honest single figure — there's a **set of drivers you have to model**: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the extra human-in-the-loop time that divergence adds.**
 
 Point those drivers at *your* volumes and you get a P&L line item you can defend — which beats a number pulled from one run.
 
 ## 5. How it's measured — the evaluation the product needs *(method, not published accuracy %s)*
 
-Claiming an accuracy number on a small fixture set is vanity — it reads as fabricated because it is. The actual product requirement is an **evaluation pipeline**: drift tracking over time, precision/recall against a golden set, and the **single-vs-dual delta threshold** — the measured question of whether the second agent actually earns its cost. That pipeline is designed, not built here — it lands with the eval work (tracked as deferred in the lineage).
+Claiming an accuracy number on a small fixture set is vanity — it reads as fabricated because it is. The actual product requirement is an **evaluation pipeline**: drift tracking over time, precision/recall against a golden set, and the **single-vs-dual delta threshold** — the measured question of whether the second agent actually earns its cost. And the metric a product owner can't skip: the **divergence rate** — how often the two agents disagree. A human reviews every case regardless, but a disagreement turns a quick sign-off into a slow adjudication — so that rate is what would size a reviewer team in production. That pipeline is designed, not built here — it lands with the eval work (tracked as deferred in the lineage).
 
 A method for knowing whether it works beats a number that asks you to take it on faith.
 
@@ -83,13 +85,13 @@ A cheap, deterministic, config-driven **scope gate** triages every case up front
 
 ## 9. Tradeoffs
 
-| Decision | Why |
-|---|---|
-| Two vendors, not two of the same model | Correlated errors defeat the point of a second opinion |
-| Deterministic verdict, not an LLM judge | The thing that decides agreement can't be allowed to hallucinate |
-| Deterministic, config-driven triage, not an LLM router | The gate that decides whether to spend should be cheap and predictable, not another model call |
-| RAG grounding, not full-context *(built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md))* | Cost and focus — retrieve what's relevant, don't pay for the whole corpus |
-| Parallel, not sequential | Independence without paying latency twice |
+| Decision | Why | Impact |
+|---|---|---|
+| Two vendors, not two of the same model | Two of the same model tend to share the same weaknesses, so they can miss the same things | Both models agree on the wrong answer, and the reviewer sees hollow agreement, not a red flag |
+| Deterministic verdict, not an LLM judge | The thing that decides agreement can't be allowed to hallucinate | The judge hallucinates agreement that isn't there — and, unlike code, can't show the reviewer why |
+| Deterministic, config-driven triage, not an LLM router | The gate that decides whether to spend should be cheap and predictable, not another model call | A model call — and a new thing that can break — on every request, to make a call a rule already makes |
+| RAG grounding, not full-context *(built in the parent — [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md))* | Token cost and focus — retrieve what's relevant, don't inject the whole rulebook | In the parent, the operative articles alone (~87K tokens) ran nearly 3× over the model's rate limit — retrieval cut each call to 5–10K |
+| Parallel, not sequential | Independence without paying latency twice | The reviewer waits through two model calls back-to-back instead of one |
 
 ---
 
