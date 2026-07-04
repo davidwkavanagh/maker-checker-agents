@@ -68,6 +68,22 @@ def test_sensitivity_keyword_flags_case() -> None:
     assert result.sensitive is True
 
 
+def test_sensitivity_flag_scans_data_subjects() -> None:
+    # The sensitive marker lives ONLY in data_subjects — the field most likely to
+    # carry a vulnerable-population signal ("children"/"minors") — not in the
+    # purpose/description text. The gate must still flag it.
+    case = Case(
+        case_id="c7",
+        system_name="Learning tracker",
+        purpose="assess pupil learning progress over a term",
+        domain="education",
+        data_subjects=["children"],
+    )
+    result = run_scope_gate(case, POLICY)
+    assert result.proceed is True  # in scope via the education domain
+    assert result.sensitive is True  # flagged from data_subjects alone
+
+
 def test_gate_fails_open_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(*_args: object, **_kwargs: object) -> bool:
         raise RuntimeError("boom")

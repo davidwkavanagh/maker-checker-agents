@@ -3,7 +3,7 @@
 # A compliance / risk owner edits THIS file to change the system's behaviour:
 # the risk taxonomy, which model does which job, how strict agreement is, the
 # framing each agent receives, and which inputs are in scope. No code change.
-# Changes take effect on the next deploy — config, not code; on-deploy.
+# Changes take effect on the next run — config is read fresh at startup, not hot-reloaded.
 
 # --- Risk taxonomy: the tiers the system can assign (EU AI Act worked example) ---
 risk_taxonomy:

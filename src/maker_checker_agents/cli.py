@@ -51,11 +51,12 @@ _USAGE = (
 # Rendering — pure, no live calls
 # --------------------------------------------------------------------------- #
 def _render_agent(label: str, agent: AgentOutput | None) -> str:
-    # `rationale` and `articles_cited` are model-generated and printed verbatim. For
-    # the static demo fixtures this is safe (no untrusted input). A deployment that
-    # renders UNTRUSTED case briefs to a terminal should strip C0/ANSI control chars
-    # first, or a crafted response could visually spoof the verdict line. Documented
-    # boundary, deliberately not hardened here — proof, not platform (0011, sec review).
+    # `rationale` and `articles_cited` are live model output, printed verbatim — so
+    # the untrusted channel is the model's *response*, not the (trusted) demo case: a
+    # model can emit C0/ANSI control bytes to visually spoof the verdict line no matter
+    # how static the input is. With no attacker-controlled model deployment here that
+    # spoof is out of scope; a deployment rendering untrusted model output should strip
+    # control chars first. Documented boundary, not hardened — proof, not platform (0011).
     if agent is None:
         return f"{label}: (no classification returned — this agent did not respond)"
     articles = ", ".join(agent.articles_cited) if agent.articles_cited else "(none cited)"

@@ -48,7 +48,7 @@ not to use GenAI*.
 
 - `src/maker_checker_agents/scope_gate.py` — token matching over `framework_triggers`.
 - `config/policy.yaml` — `framework_triggers`, `sensitivity_keywords`.
-- README §7 (route-before-you-spend, *designed not shipped*), §9 (tradeoffs table).
+- README §7 (route-before-you-spend — *runs today; the semantic router is the next step*), §9 (tradeoffs table).
 
 ## Lineage
 

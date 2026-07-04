@@ -63,11 +63,11 @@ A method for knowing whether it works beats a number that asks you to take it on
 
 ## 6. Latency — a decision, not a gap
 
-Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor here is the **slower model** alone — the verdict and its rendering are instant, deterministic code; *the grounded parent system adds retrieval and an LLM explanation step on top of that*. Divergent cases add human wall-clock, which is accounted for in the cost model above, not hidden here.
+Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor here is the **slower model** alone — the verdict and its rendering are instant, deterministic code; *the grounded parent system adds retrieval and an LLM explanation step on top of that*. Divergent cases add human wall-clock, which is accounted for in the cost model above, not hidden here. The parallel calls are bounded by a per-agent timeout, so a single stalled model can't hang the pipeline — it degrades to the same not-answered path as any other agent failure.
 
 ## 7. Route before you spend — the scope gate *(runs; the semantic upgrade is next)*
 
-A cheap, deterministic, config-driven **scope gate** triages every case up front, so you don't pay two frontier models to classify inputs that are obviously out of scope — those skip the pair and route straight to a human. That gate runs today (keyword/domain matching against the config).
+A cheap, deterministic, config-driven **scope gate** triages every case up front, so you don't pay two frontier models to classify inputs that are obviously out of scope — those skip the pair and route straight to a human. That gate runs today (keyword/domain matching against the config). The same gate also flags cases matching sensitivity keywords — children, health records, criminal record, and the like — to raise reviewer attention; that runs today too.
 
 **What's next** is the *precision* upgrade: a semantic/vector router that also catches paraphrases the literal vocabulary misses — designed, not built, called out honestly rather than implied.
 

@@ -29,7 +29,9 @@ _WORD = re.compile(r"[a-z0-9]+")
 
 
 def _tokens(case: Case) -> set[str]:
-    blob = " ".join([case.purpose, case.description, case.domain, *case.data_types]).lower()
+    blob = " ".join(
+        [case.purpose, case.description, case.domain, *case.data_types, *case.data_subjects]
+    ).lower()
     return set(_WORD.findall(blob))
 
 
