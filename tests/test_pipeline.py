@@ -281,13 +281,29 @@ def test_result_carries_scope_verdict_and_correct_attribution(
 def test_sensitive_flag_propagates_to_result(monkeypatch: pytest.MonkeyPatch) -> None:
     # A compliance-facing field: the scope gate sets sensitive=True on a sensitivity
     # keyword (here "minors", in the purpose — the gate scans purpose/description/
-    # domain/data_types, NOT data_subjects) and the runner must carry it out on the
+    # domain/data_types/data_subjects) and the runner must carry it out on the
     # result. No other test exercises sensitive=True, so a dropped flag would ship silently.
     case = Case(
         case_id="c-sens",
         system_name="Applicant ranker",
         purpose="Automated recruitment CV screening of minors",
         domain="hr",
+    )
+    _patch_agents(monkeypatch, _out("high"), _out("high"))
+    result = run_pipeline(case, POLICY)
+    assert result.scope.proceed is True
+    assert result.scope.sensitive is True
+
+
+def test_sensitive_flag_from_data_subjects_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The compliance-facing sensitivity flag must survive end-to-end when its keyword
+    # arrives via data_subjects (the field added this change), not only via the purpose.
+    case = Case(
+        case_id="c-sens-subj",
+        system_name="Applicant ranker",
+        purpose="automated recruitment screening",  # in scope, no sensitivity keyword
+        domain="hr",
+        data_subjects=["children"],  # the sensitivity signal, only here
     )
     _patch_agents(monkeypatch, _out("high"), _out("high"))
     result = run_pipeline(case, POLICY)
