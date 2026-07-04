@@ -20,7 +20,7 @@ This README describes the product as it's designed to work, not necessarily as i
 
 ## 1. The problem
 
-When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer. Under the EU AI Act, a wrong high-risk classification carries fines up to €15M or 3% of global turnover (Art. 99) — the failure mode this pattern exists to reduce.
+When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer. Under the EU AI Act, the fine doesn't hit when you misclassify — it hits when you launch on that misclassification, or find a live system was mis-scoped all along: up to €35M or 7% of global turnover (Art. 99). That's the failure this pattern exists to catch, at the cheapest point to fix it.
 
 The need isn't a smarter single model. It's a *process* that produces an independent second judgement, makes disagreement visible, and keeps a human accountable for the decision.
 
