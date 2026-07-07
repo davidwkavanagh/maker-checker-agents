@@ -1,5 +1,7 @@
 # maker-checker-agents
 
+[![CI](https://github.com/davidwkavanagh/maker-checker-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/davidwkavanagh/maker-checker-agents/actions/workflows/ci.yml)
+
 **Independent dual-agent verification for high-stakes AI classification.** Two models from different vendors classify the same case without seeing each other's work; a deterministic check surfaces where they disagree; a human always makes the call. The rules that govern the AI live in configuration, not code.
 
 ---
