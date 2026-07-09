@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1085" width="760" height="1085" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Maker-Checker risk-classification pipeline: a brief passes a deterministic scope gate, then two vendors (Gemini Pro as Maker, Claude Sonnet as Checker) independently classify it into one of four EU AI Act risk tiers in parallel and state-isolated; a deterministic verdict compares them (consistent, divergent, or inconclusive); every case is routed to a human reviewer who carries the legal weight.">
+  <style>
+    svg{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    @media (prefers-color-scheme: dark){ svg{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }}
+    svg.force-dark{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }
+    svg.force-light{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+    .serif{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif}
+    .bg{fill:var(--page)}
+    .stem{stroke:var(--divider);stroke-width:2}
+    .eyebrow{fill:var(--mid);font-size:12px;letter-spacing:1.6px;font-weight:600}
+    .label{fill:var(--mid);font-size:11.5px;letter-spacing:1.4px;font-weight:600}
+    .title{fill:var(--navy);font-size:17px;font-weight:650}
+    .desc{fill:var(--mid);font-size:13.5px}
+    .brieftxt{fill:var(--mid);font-size:12.5px}
+    .f-gate{fill:var(--card);stroke:var(--gate);stroke-width:1.5}
+    .f-grey{fill:var(--card);stroke:var(--v-inc);stroke-width:1.5}
+    .f-violet{fill:var(--card);stroke:var(--violet);stroke-width:1.5}
+    .gate-lab{fill:var(--gate)}
+    .grey-lab{fill:var(--v-inc)}
+    .gc-box{fill:var(--gate-bg);stroke:var(--gate);stroke-width:1}
+    .gc-txt{fill:var(--gate);font-size:10.5px;font-weight:600;letter-spacing:0.8px}
+    .hero-kicker{fill:var(--violet);font-size:11px;letter-spacing:1.5px;font-weight:700}
+    .hero-title{fill:var(--navy);font-size:21px;font-weight:700}
+    .hero-sub{fill:var(--mid);font-size:12.5px}
+    .tname{font-size:12.5px;font-weight:700;letter-spacing:0.2px}
+    .tdesc{font-size:10.5px;fill:var(--mid)}
+    .note{fill:var(--muted);font-size:10.5px;letter-spacing:0.8px;font-weight:600}
+    .agent-box{fill:var(--page);stroke:var(--hair);stroke-width:1}
+    .agent-lab{fill:var(--ink);font-size:11.5px;letter-spacing:1.2px;font-weight:600}
+    .arole{fill:var(--mid);font-size:12.5px}
+    .model-txt{fill:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:0.2px}
+    .iso{fill:var(--muted);font-size:10.5px}
+    .o-lab{font-size:11px;font-weight:700;letter-spacing:0.5px}
+    .o-desc{fill:var(--mid);font-size:12.5px}
+    .human-box{fill:var(--violet-tint);stroke:var(--violet);stroke-width:1.5}
+    .h-lab{fill:var(--violet);font-size:11.5px;letter-spacing:1.4px;font-weight:600}
+    .thesis{fill:var(--navy);font-size:21px}
+    .h-desc{fill:var(--ink);font-size:13px}
+    .divider{stroke:var(--hair);stroke-width:1}
+    .stack{fill:var(--mid);font-size:12px}
+    .prov{fill:var(--muted);font-size:12.5px}
+  </style>
+
+  <rect class="bg" x="0" y="0" width="760" height="1085" rx="16"/>
+
+  <!-- eyebrow -->
+  <text class="mono eyebrow" x="380" y="38" text-anchor="middle">MAKER–CHECKER  ·  RISK-CLASSIFICATION PIPELINE</text>
+
+  <!-- Brief entry pill -->
+  <rect x="200" y="58" width="360" height="34" rx="17" fill="none" stroke="var(--divider)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text class="mono brieftxt" x="380" y="80" text-anchor="middle"><tspan fill="var(--ink)" font-weight="600">Brief</tspan> — a compliance case enters the pipeline</text>
+  <line class="stem" x1="380" y1="92" x2="380" y2="114"/>
+
+  <!-- Scope Gate -->
+  <rect class="f-gate" x="40" y="114" width="680" height="138" rx="12"/>
+  <text class="mono label gate-lab" x="60" y="148">SCOPE GATE</text>
+  <text class="title" x="60" y="170">Is this brief in scope?</text>
+  <text class="desc" x="60" y="191">A deterministic check, config-driven from policy.yaml.</text>
+  <text class="desc" x="60" y="208">Fails open — it never silently drops a case.</text>
+  <rect class="gc-box" x="60" y="217" width="176" height="23" rx="6"/>
+  <text class="mono gc-txt" x="71" y="233">DETERMINISTIC · NO LLM</text>
+  <line class="stem" x1="380" y1="252" x2="380" y2="274"/>
+
+  <!-- HERO: classification -->
+  <rect class="f-violet" x="40" y="274" width="680" height="318" rx="16"/>
+  <text class="mono hero-kicker" x="380" y="306" text-anchor="middle">THE DECISION · EU AI ACT</text>
+  <text class="hero-title" x="380" y="332" text-anchor="middle">Which risk tier does this brief fall under?</text>
+  <text class="hero-sub" x="380" y="352" text-anchor="middle">Every in-scope brief is placed in exactly one of four tiers.</text>
+
+  <!-- tier cards -->
+  <g>
+    <rect x="60"  y="364" width="152" height="66" rx="9" fill="var(--r-unacc-bg)" stroke="var(--r-unacc)" stroke-width="1.3"/>
+    <text class="mono tname" x="72" y="392" fill="var(--r-unacc)">UNACCEPTABLE</text>
+    <text class="tdesc" x="72" y="410">Prohibited uses</text>
+
+    <rect x="222" y="364" width="152" height="66" rx="9" fill="var(--r-high-bg)" stroke="var(--r-high)" stroke-width="1.3"/>
+    <text class="mono tname" x="234" y="392" fill="var(--r-high)">HIGH</text>
+    <text class="tdesc" x="234" y="410">Heavily regulated</text>
+
+    <rect x="384" y="364" width="152" height="66" rx="9" fill="var(--r-lim-bg)" stroke="var(--r-lim)" stroke-width="1.3"/>
+    <text class="mono tname" x="396" y="392" fill="var(--r-lim)">LIMITED</text>
+    <text class="tdesc" x="396" y="410">Transparency duties</text>
+
+    <rect x="546" y="364" width="152" height="66" rx="9" fill="var(--r-min-bg)" stroke="var(--r-min)" stroke-width="1.3"/>
+    <text class="mono tname" x="558" y="392" fill="var(--r-min)">MINIMAL</text>
+    <text class="tdesc" x="558" y="410">No obligations</text>
+  </g>
+
+  <text class="mono note" x="380" y="456" text-anchor="middle">TWO VENDORS CLASSIFY — IN PARALLEL, STATE-ISOLATED</text>
+
+  <!-- agent cards -->
+  <rect class="agent-box" x="60"  y="470" width="314" height="80" rx="10"/>
+  <text class="mono agent-lab" x="74" y="496">MAKER</text>
+  <text class="arole" x="74" y="516">Assigns a tier + cites the articles</text>
+  <rect x="74" y="526" width="94" height="23" rx="6" fill="var(--maker-pill)"/>
+  <text class="mono model-txt" x="84" y="542">Gemini Pro</text>
+
+  <rect class="agent-box" x="386" y="470" width="314" height="80" rx="10"/>
+  <text class="mono agent-lab" x="400" y="496">CHECKER</text>
+  <text class="arole" x="400" y="516">Classifies from scratch, its own tier</text>
+  <rect x="400" y="526" width="110" height="23" rx="6" fill="var(--checker-pill)"/>
+  <text class="mono model-txt" x="410" y="542">Claude Sonnet</text>
+
+  <text class="iso" x="380" y="576" text-anchor="middle">Neither model sees the other's answer — independence is structural, not a prompt</text>
+  <line class="stem" x1="380" y1="592" x2="380" y2="614"/>
+
+  <!-- Verdict -->
+  <rect class="f-grey" x="40" y="614" width="680" height="220" rx="12"/>
+  <text class="mono label grey-lab" x="60" y="648">VERDICT</text>
+  <text class="title" x="60" y="670">Did both land on the same tier?</text>
+  <text class="desc" x="60" y="691">Compared in code — an exact match is required to agree. Never asked of a third model.</text>
+
+  <rect x="60" y="701" width="640" height="34" rx="8" fill="var(--v-cons-bg)" stroke="var(--v-cons)" stroke-width="1.2"/>
+  <text class="mono o-lab" x="76" y="722" fill="var(--v-cons)">CONSISTENT</text>
+  <text class="o-desc" x="205" y="722">same tier — the classification is corroborated</text>
+
+  <rect x="60" y="742" width="640" height="34" rx="8" fill="var(--v-div-bg)" stroke="var(--v-div)" stroke-width="1.2"/>
+  <text class="mono o-lab" x="76" y="763" fill="var(--v-div)">DIVERGENT</text>
+  <text class="o-desc" x="205" y="763">different tiers — the classification is contested</text>
+
+  <rect x="60" y="783" width="640" height="34" rx="8" fill="var(--v-inc-bg)" stroke="var(--v-inc)" stroke-width="1.2"/>
+  <text class="mono o-lab" x="76" y="804" fill="var(--v-inc)">INCONCLUSIVE</text>
+  <text class="o-desc" x="205" y="804">a degraded run — a missing or failed agent</text>
+  <line class="stem" x1="380" y1="834" x2="380" y2="856"/>
+
+  <!-- Human -->
+  <rect class="human-box" x="40" y="856" width="680" height="126" rx="12"/>
+  <text class="mono h-lab" x="60" y="890">HUMAN REVIEWER</text>
+  <text class="serif thesis" x="60" y="922">The human carries the legal weight — not the AI.</text>
+  <text class="h-desc" x="60" y="946">Receives the tier, both models' reasoning, and whether they agreed — then makes the</text>
+  <text class="h-desc" x="60" y="964">call that counts. Every case is routed here; the models prepare, they never decide.</text>
+
+  <!-- Footer -->
+  <line class="divider" x1="40" y1="1012" x2="720" y2="1012"/>
+  <text class="mono stack" x="40" y="1034">Python · Pydantic · standard-library orchestration · cross-vendor: Google + Anthropic</text>
+  <text class="prov" x="40" y="1056">The runnable core of the pattern behind Sandra (prileco.com) — a production system I built and run.</text>
+</svg>

@@ -28,6 +28,8 @@ The need isn't a smarter single model. It's a *process* that produces an indepen
 
 ## 2. What runs — the Maker-Checker engine *(runnable hero)*
 
+![Maker–Checker risk-classification pipeline: a brief passes a deterministic scope gate, then Gemini Pro (Maker) and Claude Sonnet (Checker) independently classify it into one of four EU AI Act risk tiers — Unacceptable, High, Limited, Minimal — in parallel and state-isolated; a deterministic verdict marks the two as consistent, divergent, or inconclusive; every case is then routed to a human reviewer, who carries the legal weight.](assets/architecture.svg)
+
 Two agents on **different model vendors** classify the same case:
 
 - **Maker** proposes a classification.
