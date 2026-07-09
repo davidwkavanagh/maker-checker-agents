@@ -163,7 +163,7 @@
   <!-- Human -->
   <rect class="human-box" x="40" y="856" width="680" height="126" rx="12"/>
   <text class="mono h-lab" x="60" y="890">HUMAN REVIEWER</text>
-  <text class="serif thesis" x="60" y="922">The human carries the legal weight — not the AI.</text>
+  <text class="thesis" x="60" y="922">The human carries the legal weight — not the AI.</text>
   <text class="h-desc" x="60" y="946">Receives the tier, both models' reasoning, and whether they agreed — then makes the</text>
   <text class="h-desc" x="60" y="964">call that counts. Every case is routed here; the models prepare, they never decide.</text>
 
