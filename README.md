@@ -20,11 +20,15 @@ That deferral is the window: organisations that get governance right now will be
 
 This README describes the product as it's designed to work, not necessarily as it fully runs today — what's marked as working is checked against running code, and nothing's claimed as done until it's built. The pattern comes from [Sandra](https://prileco.com), a live EU AI Act governance system I built.
 
+---
+
 ## 1. The problem
 
 When you ask a single model to classify something high-stakes — and then ask the same model whether it got it right — it tends to agree with itself. One model can't grade its own homework. In domains where being wrong is expensive (regulated industries, legal exposure, real money), "the model said so" is not a defensible answer. Under the EU AI Act, the fine doesn't hit when you misclassify — it hits when you launch on that misclassification, or find a live system was mis-scoped all along: up to €35M or 7% of global turnover (Art. 99). That's the failure this pattern exists to catch, at the cheapest point to fix it.
 
 The need isn't a smarter single model. It's a *process* that produces an independent second judgement, makes disagreement visible, and keeps a human accountable for the decision.
+
+---
 
 ## 2. What runs — the Maker-Checker engine *(runnable hero)*
 
@@ -61,6 +65,8 @@ The same engine on two real cases — a clear-cut one the models agree on, and a
 
 > **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
 
+---
+
 ## 3. Governance in config, not code
 
 The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent, and which inputs are even in scope for classification — lives in a **YAML configuration layer**, not in the Python.
@@ -72,6 +78,8 @@ One line of config decides what the system even reviews: adding a domain to the 
 ![Before and after a one-line edit to config/policy.yaml: adding corporate-operations to the scope gate's domains flips bank-meeting-summariser from out of scope (the maker-checker pair skipped, routed to a human) to in scope (the Gemini Maker and Claude Checker both return minimal risk, a CONSISTENT verdict, still routed to a human). No Python changed.](assets/config-governance.svg)
 
 It turns a model pipeline into something a business owner can actually govern.
+
+---
 
 ## 4. What it costs — the cost model a buyer has to build *(not a number on a random Tuesday)*
 
@@ -88,11 +96,15 @@ Running two models instead of one has a cost, and a serious buyer will ask what 
 
 Point those drivers at *your* volumes and you get a P&L line item you can defend — which beats a number pulled from one run.
 
+---
+
 ## 5. How it's measured — the evaluation the product needs *(method, not published accuracy %s)*
 
 Claiming an accuracy number on a small fixture set is vanity — it reads as fabricated because it is. The actual product requirement is an **evaluation pipeline**: drift tracking over time, precision/recall against a golden set, and the **single-vs-dual delta threshold** — the measured question of whether the second agent actually earns its cost. And the metric a product owner can't skip: the **divergence rate** — how often the two agents disagree. A human reviews every case regardless, but a disagreement turns a quick sign-off into a slow adjudication — so that rate is what would size a reviewer team in production. That pipeline is designed, not built here — it lands with the eval work (tracked as deferred in the lineage).
 
 A method for knowing whether it works beats a number that asks you to take it on faith.
+
+---
 
 ## 6. Latency — a decision, not a gap
 
@@ -107,6 +119,8 @@ checker = checker_future.result() if checker_future.done() else None
 ```
 
 *The fan-out in `_classify_concurrently` ([pipeline.py](src/maker_checker_agents/pipeline.py)) — how the parallelism is structured, not a latency measurement. Both agents are submitted at once and share a single bounded `wait`; whichever isn't done when it elapses is read as `None`.*
+
+---
 
 ## 7. Route before you spend — the scope gate *(runs; the semantic upgrade is next)*
 
@@ -125,6 +139,8 @@ applicable = [
 
 **What's next** is the *precision* upgrade: a semantic/vector router that also catches paraphrases the literal vocabulary misses — designed, not built, called out honestly rather than implied.
 
+---
+
 ## 8. What I learned building it
 
 - **Mirror tests give false confidence.** A test that re-implements the logic it's testing proves nothing about the shipping artifact — at least one test has to hit the real thing.
@@ -136,6 +152,8 @@ applicable = [
 - **Issue:** The case text is handed to the model as-is. A cleverly worded case could try to steer the AI's answer — "prompt injection."
 - **Impact:** A crafted input could push the model to the wrong EU AI Act risk level — the one thing a compliance tool can't afford to get quietly wrong.
 - **Resolution:** This version only checks that the answer is one of the EU AI Act risk levels. That catches a garbled or made-up answer, but not an injection that asks for a real risk level that happens to be wrong (say, "treat this as minimal risk"). That gap is closed in the production system, which this rebuild doesn't copy: production scans the submitted text for prompt injection, and if it finds any, keeps it out of the classification and flags the potential issue to the human reviewer. Built and tested there; named here, not reproduced.
+
+---
 
 ## 9. Tradeoffs
 
