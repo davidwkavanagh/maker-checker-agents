@@ -37,7 +37,19 @@ Two agents on **different model vendors** classify the same case:
 - A **deterministic, non-LLM verdict** compares the two: *consistent*, *divergent*, or *inconclusive*. The comparison is code, not a third model — it can't hallucinate its own conclusion.
 - **Graceful degradation:** if one agent fails, the pipeline doesn't. The case proceeds to a human with the verdict capped to *inconclusive* — the surviving agent's classification can't stand in for a second opinion.
 
-Independence here is **structural** — a state boundary in code, not a "please don't peek" instruction — so an auditor can *verify* it held, instead of taking the model's word that it did.
+Independence here is **structural** — a state boundary in code, not a "please don't peek" instruction — so an auditor can *verify* it held, instead of taking the model's word that it did. The whole guarantee is in the Checker's signature:
+
+```python
+def run_checker(case: Case, policy: Policy) -> AgentOutput | None:
+    """Classify ``case`` with the Checker model, independently of the Maker.
+
+    The signature carries only ``case`` and ``policy`` — there is no parameter
+    through which the Maker's output could arrive. Independence is structural.
+    """
+    return _classify(case, policy, policy.models.checker, policy.prompts.checker_system, "checker")
+```
+
+*`run_checker`, verbatim ([agents.py](src/maker_checker_agents/agents.py)) — the parameter list is the whole receipt.*
 
 This is not an invention. It's the **pragmatic application of an established control pattern** — maker-checker / four-eyes, long used in finance and audit — to the specific failure modes of LLMs. The contribution is the engineering that makes it real: hard independence, a deterministic verdict, and honest failure handling.
 
@@ -63,7 +75,16 @@ It turns a model pipeline into something a business owner can actually govern.
 
 ## 4. What it costs — the cost model a buyer has to build *(not a number on a random Tuesday)*
 
-Running two models instead of one has a cost, and a serious buyer will ask what it is. There's no honest single figure — there's a **set of drivers you have to model**: token overhead of the second agent, context-window growth from retrieved grounding (a grounded-system input — grounding runs in the parent, not in this rebuild; see [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)), retry logic, and — the line most people miss — **the cost of the extra human-in-the-loop time that divergence adds.**
+Running two models instead of one has a cost, and a serious buyer will ask what it is. There's no honest single figure — there's a **set of drivers you have to model**:
+
+| Cost driver | What moves it |
+|---|---|
+| Second-agent token overhead | Two models classify every in-scope case, not one |
+| Retrieved-context growth | Grounding retrieval — a parent-system input, not in this rebuild ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) |
+| Retry logic | Transient vendor failures re-issued |
+| Human-in-the-loop time | How often the two agents diverge — the line most people miss |
+
+*Drivers, not numbers: no cost figure is invented here because none has been measured. The point is the shape of the model a buyer builds, not a headline rate.*
 
 Point those drivers at *your* volumes and you get a P&L line item you can defend — which beats a number pulled from one run.
 
@@ -75,11 +96,32 @@ A method for knowing whether it works beats a number that asks you to take it on
 
 ## 6. Latency — a decision, not a gap
 
-Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor here is the **slower model** alone — the verdict and its rendering are instant, deterministic code; *the grounded parent system adds retrieval and an LLM explanation step on top of that*. Divergent cases add human wall-clock, which is accounted for in the cost model above, not hidden here. The parallel calls share a single bounded wait, so a stalled model can't hang the pipeline — whichever agent hasn't returned when the bound elapses degrades to the same not-answered path as any other agent failure.
+Two models sound like double the wait. They aren't. Maker and Checker run **in parallel** — independence is held by state isolation, not by running them in sequence. You pay the **slower** of the two models, not the sum. The honest latency floor here is the **slower model** alone — the verdict and its rendering are instant, deterministic code; *the grounded parent system adds retrieval and an LLM explanation step on top of that*. Divergent cases add human wall-clock, which is accounted for in the cost model above, not hidden here. The parallel calls share a single bounded wait, so a stalled model can't hang the pipeline — whichever agent hasn't returned when the bound elapses degrades to the same not-answered path as any other agent failure. The fan-out is five lines:
+
+```python
+maker_future = pool.submit(run_maker, case, policy)
+checker_future = pool.submit(run_checker, case, policy)
+wait([maker_future, checker_future], timeout=_AGENT_TIMEOUT_SECONDS)
+maker = maker_future.result() if maker_future.done() else None
+checker = checker_future.result() if checker_future.done() else None
+```
+
+*The fan-out in `_classify_concurrently` ([pipeline.py](src/maker_checker_agents/pipeline.py)) — how the parallelism is structured, not a latency measurement. Both agents are submitted at once and share a single bounded `wait`; whichever isn't done when it elapses is read as `None`.*
 
 ## 7. Route before you spend — the scope gate *(runs; the semantic upgrade is next)*
 
 A cheap, deterministic, config-driven **scope gate** triages every case up front, so you don't pay two frontier models to classify inputs that are obviously out of scope — those skip the pair and route straight to a human. That gate runs today (keyword/domain matching against the config). The same gate also flags cases matching sensitivity keywords — children, health records, criminal record, and the like — to raise reviewer attention; that runs today too.
+
+```python
+applicable = [
+    name
+    for name, trigger in policy.framework_triggers.items()
+    if any(_phrase_present(kw, tokens) for kw in trigger.keywords)
+    or any(_phrase_present(dom, tokens) for dom in trigger.domains)
+]
+```
+
+*Excerpt of `run_scope_gate` ([scope_gate.py](src/maker_checker_agents/scope_gate.py)) — a case is in scope when its text matches a configured framework's keywords or domains. Deterministic, config-driven, no model call; the full function wraps this in fail-open error handling so a gate fault never drops a case.*
 
 **What's next** is the *precision* upgrade: a semantic/vector router that also catches paraphrases the literal vocabulary misses — designed, not built, called out honestly rather than implied.
 
