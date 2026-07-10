@@ -51,9 +51,13 @@ The same engine on two real cases — a clear-cut one the models agree on, and a
 
 ## 3. Governance in config, not code
 
-The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent — lives in a **YAML configuration layer**, not in the Python.
+The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent, and which inputs are even in scope for classification — lives in a **YAML configuration layer**, not in the Python.
 
-A non-technical owner (a compliance or risk lead) can change *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next run** — config is read fresh at startup, not hot-reloaded.
+A non-technical owner (a compliance or risk lead) can change *which inputs get classified at all*, *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next run** — config is read fresh at startup, not hot-reloaded.
+
+One line of config decides what the system even reviews: adding a domain to the scope gate brings a whole class of cases under the two-model check, no Python touched:
+
+![Before and after a one-line edit to config/policy.yaml: adding corporate-operations to the scope gate's domains flips bank-meeting-summariser from out of scope (the maker-checker pair skipped, routed to a human) to in scope (the Gemini Maker and Claude Checker both return minimal risk, a CONSISTENT verdict, still routed to a human). No Python changed.](assets/config-governance.svg)
 
 It turns a model pipeline into something a business owner can actually govern.
 

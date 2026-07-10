@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1597" width="760" height="1597" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="A config-governance demo. First panel: the file config/policy.yaml with one line added to framework_triggers.eu_ai_act.domains — corporate-operations. Second panel, before the edit: mca run bank-meeting-summariser returns OUT OF SCOPE, the maker-checker pair skipped, routed to a human. Third panel, after the edit on the next run: the same case is in scope, the Gemini Maker and Claude Checker both return minimal risk for a CONSISTENT verdict, and it is still routed to a human. No Python changed.">
+  <style>
+    svg{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    @media (prefers-color-scheme: dark){ svg{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }}
+    svg.force-dark{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }
+    svg.force-light{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+    .bg{fill:var(--page)}
+    .eyebrow{fill:var(--mid);font-size:12px;letter-spacing:1.6px;font-weight:600}
+    .hero-title{fill:var(--navy);font-size:21px;font-weight:700}
+    .hero-sub{fill:var(--mid);font-size:12.5px}
+    .win{fill:var(--card);stroke:var(--hair);stroke-width:1}
+    .winbar{stroke:var(--hair);stroke-width:1}
+    .wintag{fill:var(--muted);font-size:10px;letter-spacing:1.2px;font-weight:600}
+    .wincase{fill:var(--mid);font-size:11.5px;font-weight:600}
+    .prompt{fill:var(--ink);font-size:13px;font-weight:600}
+    .dollar{fill:var(--violet);font-size:13px;font-weight:700}
+    .b-ink{fill:var(--ink);font-size:13px}
+    .b-mid{fill:var(--mid);font-size:13px}
+    .k{fill:var(--mid);font-size:13px}
+    .rat{fill:var(--muted);font-size:11px}
+    .ahdr{fill:var(--ink);font-size:12.5px;font-weight:700;letter-spacing:0.3px}
+    .pill{font-size:10.5px;font-weight:700;fill:#FFFFFF}
+    .tier{font-size:13px;font-weight:700;letter-spacing:0.3px}
+    .vlabel{font-size:12.5px;font-weight:700;letter-spacing:0.8px}
+    .vdesc{fill:var(--mid);font-size:12px}
+    .routed{fill:var(--mid);font-size:12px}
+    .cap{fill:var(--mid);font-size:11.5px;font-style:italic}
+    .foot-h{fill:var(--muted);font-size:10.5px;letter-spacing:1px;font-weight:600}
+    .foot{fill:var(--muted);font-size:12px}
+    .prov{fill:var(--muted);font-size:12.5px}
+    .divider{stroke:var(--hair);stroke-width:1}
+    .yk{fill:var(--mid);font-size:13px}
+    .yv{fill:var(--ink);font-size:13px}
+    .yell{fill:var(--muted);font-size:12px;font-style:italic}
+    .yadd{fill:var(--r-min);font-size:13px;font-weight:600}
+    .ygut{fill:var(--r-min);font-size:13px;font-weight:700}
+    .cfg-tag{fill:var(--violet);font-size:10px;letter-spacing:1.2px;font-weight:700}
+  </style>
+  <rect class="bg" x="0" y="0" width="760" height="1597" rx="16"/>
+  <text class="mono eyebrow" x="380.0" y="38" text-anchor="middle">GOVERNANCE IN CONFIG  ·  NOT CODE</text>
+  <text class="hero-title" x="380.0" y="68" text-anchor="middle">One line of config changes what the system reviews</text>
+  <text class="hero-sub" x="380.0" y="90" text-anchor="middle">A risk owner edits policy.yaml, not the Python. The change takes effect on the next run.</text>
+  <rect class="win" x="40" y="120" width="680" height="345" rx="12"/>
+<line class="winbar" x1="40" y1="158" x2="720" y2="158"/>
+<circle cx="62" cy="139" r="4.5" fill="var(--divider)"/>
+<circle cx="80" cy="139" r="4.5" fill="var(--divider)"/>
+<circle cx="98" cy="139" r="4.5" fill="var(--divider)"/>
+<text class="mono wincase" x="122" y="143.0">config/policy.yaml</text>
+<text class="mono cfg-tag" x="700" y="143" text-anchor="end">THE EDIT · + 1 LINE</text>
+<text class="mono yk" x="62" y="192">framework_triggers:</text>
+<text class="mono yk" x="62" y="215">  eu_ai_act:</text>
+<text class="mono yell" x="62" y="238">    keywords:   … 11 triggers …</text>
+<text class="mono yk" x="62" y="261">    domains:</text>
+<text class="mono yv" x="62" y="284">      - finance</text>
+<text class="mono yv" x="62" y="307">      - hr</text>
+<text class="mono yv" x="62" y="330">      - law-enforcement</text>
+<text class="mono yv" x="62" y="353">      - healthcare</text>
+<text class="mono yv" x="62" y="376">      - education</text>
+<text class="mono yv" x="62" y="399">      - critical-infrastructure</text>
+<rect x="41" y="407" width="678" height="21" fill="var(--r-min-bg)"/>
+<text class="mono ygut" x="48" y="422">+</text>
+<text class="mono yadd" x="62" y="422">      - corporate-operations</text>
+  <rect class="win" x="40" y="491" width="680" height="208" rx="12"/>
+<line class="winbar" x1="40" y1="529" x2="720" y2="529"/>
+<circle cx="62" cy="510" r="4.5" fill="var(--divider)"/>
+<circle cx="80" cy="510" r="4.5" fill="var(--divider)"/>
+<circle cx="98" cy="510" r="4.5" fill="var(--divider)"/>
+<text class="mono wincase" x="122" y="514.0">bank-meeting-summariser</text>
+<text class="mono wintag" x="700" y="514" text-anchor="end">BEFORE · SHIPPED CONFIG</text>
+<text class="mono dollar" x="62" y="565">$</text>
+<text class="mono prompt" x="78" y="565">mca run bank-meeting-summariser</text>
+<text class="mono b-mid" x="62" y="602">Scope:   OUT OF SCOPE — no governed framework matched.</text>
+<text class="mono b-mid" x="62" y="625">The maker-checker pair was skipped; this case was not classified.</text>
+<text class="mono routed" x="62" y="656">Routed to a human for confirmation.</text>
+  <rect class="win" x="40" y="725" width="680" height="683" rx="12"/>
+<line class="winbar" x1="40" y1="763" x2="720" y2="763"/>
+<circle cx="62" cy="744" r="4.5" fill="var(--divider)"/>
+<circle cx="80" cy="744" r="4.5" fill="var(--divider)"/>
+<circle cx="98" cy="744" r="4.5" fill="var(--divider)"/>
+<text class="mono wincase" x="122" y="748.0">bank-meeting-summariser</text>
+<text class="mono wintag" x="700" y="748" text-anchor="end">AFTER · ON THE NEXT RUN</text>
+<text class="mono dollar" x="62" y="799">$</text>
+<text class="mono prompt" x="78" y="799">mca run bank-meeting-summariser</text>
+<text class="mono b-mid" x="62" y="834">Scope:   in scope — matched: eu_ai_act</text>
+<text class="mono ahdr" x="62" y="869">Maker</text>
+<rect x="140" y="856" width="111" height="19" rx="5" fill="var(--maker-pill)"/>
+<text class="mono pill" x="148" y="869">gemini-2.5-pro</text>
+<text class="mono k" x="78" y="897">Risk tier</text>
+<text class="mono tier" x="214" y="897" fill="var(--r-min)">minimal</text>
+<text class="mono rat" x="214" y="920">The system is an internal productivity tool that makes no automated</text>
+<text class="mono rat" x="214" y="937">decisions about individuals and does not interact with the public,</text>
+<text class="mono rat" x="214" y="954">placing it outside the criteria for high or limited risk.</text>
+<text class="mono k" x="78" y="978">Articles cited</text>
+<text class="mono b-ink" x="214" y="978">Article 6, Article 52</text>
+<text class="mono ahdr" x="62" y="1017">Checker</text>
+<rect x="140" y="1004" width="132" height="19" rx="5" fill="var(--checker-pill)"/>
+<text class="mono pill" x="148" y="1017">claude-sonnet-4-6</text>
+<text class="mono k" x="78" y="1045">Risk tier</text>
+<text class="mono tier" x="214" y="1045" fill="var(--r-min)">minimal</text>
+<text class="mono rat" x="214" y="1068">MinuteMaker is an internal productivity tool that summarises</text>
+<text class="mono rat" x="214" y="1085">employee meeting notes into action points, processes no customer</text>
+<text class="mono rat" x="214" y="1102">data, and makes no automated decisions affecting any person; it</text>
+<text class="mono rat" x="214" y="1119">falls squarely within the minimal-risk category with no specific</text>
+<text class="mono rat" x="214" y="1136">regulatory obligations under the EU AI Act. It does not meet any of</text>
+<text class="mono rat" x="214" y="1153">the criteria for high-risk systems (Annex III) nor does it involve</text>
+<text class="mono rat" x="214" y="1170">prohibited practices or transparency-triggering interactions such as</text>
+<text class="mono rat" x="214" y="1187">chatbots or emotion recognition.</text>
+<text class="mono k" x="78" y="1211">Articles cited</text>
+<text class="mono b-ink" x="214" y="1211">EU AI Act Art. 6 (classification rules for high-risk AI</text>
+<text class="mono rat" x="214" y="1234">systems), EU AI Act Annex III (high-risk AI system</text>
+<text class="mono rat" x="214" y="1251">categories — not applicable here), EU AI Act Recital 60</text>
+<text class="mono rat" x="214" y="1268">(minimal-risk AI systems)</text>
+<text class="mono routed" x="62" y="1365">Routed to a human — the human decides; this engine stops here.</text>
+<rect x="62" y="1305" width="638" height="34" rx="8" fill="var(--v-cons-bg)" stroke="var(--v-cons)" stroke-width="1.3"/>
+<text class="mono vlabel" x="78" y="1327" fill="var(--v-cons)">Verdict: CONSISTENT</text>
+<text class="vdesc" x="237.6" y="1327">   both agree, so the classification is corroborated</text>
+  <text class="cap" x="42" y="1430">No Python changed. One line in policy.yaml widened what the two-model review covers,</text>
+  <text class="cap" x="42" y="1448">and because the scope gate is deterministic, it flips on every run. In scope or out, the case still goes to a human.</text>
+  <line class="divider" x1="40" y1="1476" x2="720" y2="1476"/>
+  <text class="mono foot-h" x="40" y="1492">HOW THIS WAS MADE</text>
+  <text class="foot" x="40" y="1510">Both panels are real `mca run` output: the same case, before and after a one-line config/policy.yaml edit.</text>
+  <text class="foot" x="40" y="1527">The edit is shown, then reset. The shipped repo pins this case out of scope by design (a test guards it),</text>
+  <text class="foot" x="40" y="1544">so a fresh clone reproduces the 'before' run.</text>
+  <text class="prov" x="40" y="1569">The runnable core of the pattern behind Sandra (prileco.com).</text>
+</svg>
