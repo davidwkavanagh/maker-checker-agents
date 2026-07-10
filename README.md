@@ -43,6 +43,10 @@ This is not an invention. It's the **pragmatic application of an established con
 
 By default the two agents run on different vendors — Google and Anthropic — so the verdict doesn't rest on any single vendor's judgement. That pairing is set in config; enforcing it, or adding a third vendor, would take code.
 
+The same engine on two real cases — a clear-cut one the models agree on, and a borderline one they split on:
+
+![Two real `mca run` outputs. For credit-scoring, both Gemini (Maker) and Claude (Checker) return high risk — a CONSISTENT verdict. For staff-wellbeing-emotion, the Maker returns limited and the Checker returns unacceptable — a DIVERGENT verdict. Both cases are routed to a human reviewer; at temperature 0 the models still vary run to run.](assets/terminal-demo.svg)
+
 > **On the citations it emits.** Each agent returns article references from the model's own training knowledge — these are **ungrounded**, the failure mode named in [0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md). That is deliberately **not** how the production parent does it: production grounds every classification against retrieved regulatory text, with provenance. The ungrounded version runs here on purpose — it makes the gap visible and keeps the fix ([0007](docs/decisions/0007-grounding-and-retrieved-source-provenance.md)) concrete rather than abstract.
 
 ## 3. Governance in config, not code
@@ -133,10 +137,11 @@ mca list                          # the map: every demo case + its illustrative 
 
 export GOOGLE_API_KEY=...          # the Maker  (Gemini)
 export ANTHROPIC_API_KEY=...       # the Checker (Claude)
-mca run credit-scoring            # the proof: one case, live — both agents, the verdict, routed to a human
+mca run credit-scoring            # a clear-cut case — the two models tend to agree (CONSISTENT)
+mca run staff-wellbeing-emotion   # a borderline case — the two models often split (DIVERGENT)
 ```
 
-`mca list` needs no keys — the scope map is deterministic. `mca run <case-id>` makes real, paid calls to both vendors ([0008](docs/decisions/0008-runnable-agent-layer.md)); there is no offline or replay mode, and missing keys are caught before any spend. Run from the clone (or `python -m maker_checker_agents …` if the `mca` script isn't on your PATH).
+`mca list` needs no keys — the scope map is deterministic. `mca run <case-id>` makes real, paid calls to both vendors ([0008](docs/decisions/0008-runnable-agent-layer.md)); there is no offline or replay mode, and missing keys are caught before any spend. Run from the clone (or `python -m maker_checker_agents …` if the `mca` script isn't on your PATH). Both models run at `temperature 0`, but hosted inference isn't bitwise-deterministic — a borderline case can land differently across runs, which is exactly why an independent second check and a human matter.
 
 ## License
 

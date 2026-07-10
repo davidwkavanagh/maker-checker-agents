@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1495" width="760" height="1495" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Two real mca run outputs: credit-scoring returns high risk from both Gemini Maker and Claude Checker for a CONSISTENT verdict; staff-wellbeing-emotion returns limited from the Maker and unacceptable from the Checker for a DIVERGENT verdict. Both cases route to a human reviewer.">
+  <style>
+    svg{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    @media (prefers-color-scheme: dark){ svg{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }}
+    svg.force-dark{
+      --page:#0D1117; --card:#161B22; --navy:#F0F3F8; --ink:#E7EAEF; --mid:#9AA3B2; --muted:#6E7887;
+      --hair:#252B35; --divider:#333B47;
+      --violet:#A78BFA; --violet-tint:#241B3A;
+      --r-unacc:#F87171; --r-unacc-bg:#2A1618; --r-high:#FBBF24; --r-high-bg:#2A2113;
+      --r-lim:#EAB308; --r-lim-bg:#282208; --r-min:#4ADE80; --r-min-bg:#122519;
+      --v-cons:#60A5FA; --v-cons-bg:#132030; --v-div:#FB923C; --v-div-bg:#2A1B10;
+      --v-inc:#9CA3AF; --v-inc-bg:#1B2029; --gate:#2DD4BF; --gate-bg:#0C2624;
+      --maker-pill:#4C7FC4; --checker-pill:#C06E38;
+    }
+    svg.force-light{
+      --page:#F1F5F9; --card:#FFFFFF; --navy:#0F172A; --ink:#1E293B; --mid:#64748B; --muted:#94A3B8;
+      --hair:#E2E8F0; --divider:#CBD5E1;
+      --violet:#5B21B6; --violet-tint:#EDE9FE;
+      --r-unacc:#DC2626; --r-unacc-bg:#FEF2F2; --r-high:#D97706; --r-high-bg:#FFFBEB;
+      --r-lim:#CA8A04; --r-lim-bg:#FEFCE8; --r-min:#16A34A; --r-min-bg:#F0FDF4;
+      --v-cons:#2563EB; --v-cons-bg:#EFF6FF; --v-div:#EA580C; --v-div-bg:#FFF7ED;
+      --v-inc:#6B7280; --v-inc-bg:#F9FAFB; --gate:#0EA5A5; --gate-bg:#ECFDFA;
+      --maker-pill:#3B6FB5; --checker-pill:#B5622E;
+    }
+    .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+    .bg{fill:var(--page)}
+    .eyebrow{fill:var(--mid);font-size:12px;letter-spacing:1.6px;font-weight:600}
+    .hero-title{fill:var(--navy);font-size:21px;font-weight:700}
+    .hero-sub{fill:var(--mid);font-size:12.5px}
+    .win{fill:var(--card);stroke:var(--hair);stroke-width:1}
+    .winbar{stroke:var(--hair);stroke-width:1}
+    .wintag{fill:var(--muted);font-size:10px;letter-spacing:1.2px;font-weight:600}
+    .wincase{fill:var(--mid);font-size:11.5px;font-weight:600}
+    .prompt{fill:var(--ink);font-size:13px;font-weight:600}
+    .dollar{fill:var(--violet);font-size:13px;font-weight:700}
+    .b-ink{fill:var(--ink);font-size:13px}
+    .b-mid{fill:var(--mid);font-size:13px}
+    .k{fill:var(--mid);font-size:13px}
+    .rat{fill:var(--muted);font-size:11px}
+    .ahdr{fill:var(--ink);font-size:12.5px;font-weight:700;letter-spacing:0.3px}
+    .pill{font-size:10.5px;font-weight:700;fill:#FFFFFF}
+    .tier{font-size:13px;font-weight:700;letter-spacing:0.3px}
+    .vlabel{font-size:12.5px;font-weight:700;letter-spacing:0.8px}
+    .vdesc{fill:var(--mid);font-size:12px}
+    .routed{fill:var(--mid);font-size:12px}
+    .cap{fill:var(--mid);font-size:11.5px;font-style:italic}
+    .foot-h{fill:var(--muted);font-size:10.5px;letter-spacing:1px;font-weight:600}
+    .foot{fill:var(--muted);font-size:12px}
+    .prov{fill:var(--muted);font-size:12.5px}
+    .divider{stroke:var(--hair);stroke-width:1}
+  </style>
+  <rect class="bg" x="0" y="0" width="760" height="1495" rx="16"/>
+  <text class="mono eyebrow" x="380.0" y="38" text-anchor="middle">MAKER–CHECKER  ·  LIVE ON TWO REAL CASES</text>
+  <text class="hero-title" x="380.0" y="68" text-anchor="middle">The same engine, run for real — on two cases</text>
+  <text class="hero-sub" x="380.0" y="90" text-anchor="middle">Unedited output from a live run. Two vendors classify; a deterministic verdict compares them.</text>
+  <rect class="win" x="40" y="118" width="680" height="596" rx="12"/>
+<line class="winbar" x1="40" y1="156" x2="720" y2="156"/>
+<circle cx="62" cy="137" r="4.5" fill="var(--divider)"/>
+<circle cx="80" cy="137" r="4.5" fill="var(--divider)"/>
+<circle cx="98" cy="137" r="4.5" fill="var(--divider)"/>
+<text class="mono wincase" x="122" y="141.0">credit-scoring</text>
+<text class="mono wintag" x="700" y="141" text-anchor="end">LIVE RUN · REAL MODELS</text>
+<text class="mono dollar" x="62" y="192">$</text>
+<text class="mono prompt" x="78" y="192">mca run credit-scoring</text>
+<text class="mono b-mid" x="62" y="227">Scope:   in scope — matched: eu_ai_act</text>
+<text class="mono ahdr" x="62" y="262">Maker</text>
+<rect x="140" y="249" width="111" height="19" rx="5" fill="var(--maker-pill)"/>
+<text class="mono pill" x="148" y="262">gemini-2.5-pro</text>
+<text class="mono k" x="78" y="290">Risk tier</text>
+<text class="mono tier" x="214" y="290" fill="var(--r-high)">high</text>
+<text class="mono rat" x="214" y="313">The system performs automated credit scoring to determine an</text>
+<text class="mono rat" x="214" y="330">individual's access to financial services, which is an explicitly</text>
+<text class="mono rat" x="214" y="347">enumerated high-risk use case.</text>
+<text class="mono k" x="78" y="371">Articles cited</text>
+<text class="mono b-ink" x="214" y="371">Annex III, Point 5(b)</text>
+<text class="mono ahdr" x="62" y="406">Checker</text>
+<rect x="140" y="393" width="132" height="19" rx="5" fill="var(--checker-pill)"/>
+<text class="mono pill" x="148" y="406">claude-sonnet-4-6</text>
+<text class="mono k" x="78" y="434">Risk tier</text>
+<text class="mono tier" x="214" y="434" fill="var(--r-high)">high</text>
+<text class="mono rat" x="214" y="457">CreditGauge is an automated credit scoring system used to approve</text>
+<text class="mono rat" x="214" y="474">or decline personal loans, which directly falls within the</text>
+<text class="mono rat" x="214" y="491">explicitly enumerated high-risk AI use cases under the EU AI Act.</text>
+<text class="mono rat" x="214" y="508">Such systems are subject to strict obligations including</text>
+<text class="mono rat" x="214" y="525">transparency, human oversight, data governance, and conformity</text>
+<text class="mono rat" x="214" y="542">assessments before deployment.</text>
+<text class="mono k" x="78" y="566">Articles cited</text>
+<text class="mono b-ink" x="214" y="566">EU AI Act Article 6, EU AI Act Annex III, paragraph 5(b)</text>
+<text class="mono routed" x="62" y="669">Routed to a human — the human decides; this engine stops here.</text>
+<rect x="62" y="607" width="638" height="34" rx="8" fill="var(--v-cons-bg)" stroke="var(--v-cons)" stroke-width="1.3"/>
+<text class="mono vlabel" x="78" y="629" fill="var(--v-cons)">Verdict: CONSISTENT</text>
+<text class="vdesc" x="237.6" y="629">   same tier — the classification is corroborated</text>
+  <rect class="win" x="40" y="744" width="680" height="579" rx="12"/>
+<line class="winbar" x1="40" y1="782" x2="720" y2="782"/>
+<circle cx="62" cy="763" r="4.5" fill="var(--divider)"/>
+<circle cx="80" cy="763" r="4.5" fill="var(--divider)"/>
+<circle cx="98" cy="763" r="4.5" fill="var(--divider)"/>
+<text class="mono wincase" x="122" y="767.0">staff-wellbeing-emotion</text>
+<text class="mono wintag" x="700" y="767" text-anchor="end">LIVE RUN · REAL MODELS</text>
+<text class="mono dollar" x="62" y="818">$</text>
+<text class="mono prompt" x="78" y="818">mca run staff-wellbeing-emotion</text>
+<text class="mono b-mid" x="62" y="853">Scope:   in scope — matched: eu_ai_act</text>
+<text class="mono ahdr" x="62" y="888">Maker</text>
+<rect x="140" y="875" width="111" height="19" rx="5" fill="var(--maker-pill)"/>
+<text class="mono pill" x="148" y="888">gemini-2.5-pro</text>
+<text class="mono k" x="78" y="916">Risk tier</text>
+<text class="mono tier" x="214" y="916" fill="var(--r-lim)">limited</text>
+<text class="mono rat" x="214" y="939">The system's core function is emotion recognition, which the</text>
+<text class="mono rat" x="214" y="956">provided taxonomy explicitly lists as an example of a limited-risk</text>
+<text class="mono rat" x="214" y="973">system requiring transparency obligations.</text>
+<text class="mono k" x="78" y="997">Articles cited</text>
+<text class="mono b-ink" x="214" y="997">Article 52</text>
+<text class="mono ahdr" x="62" y="1032">Checker</text>
+<rect x="140" y="1019" width="132" height="19" rx="5" fill="var(--checker-pill)"/>
+<text class="mono pill" x="148" y="1032">claude-sonnet-4-6</text>
+<text class="mono k" x="78" y="1060">Risk tier</text>
+<text class="mono tier" x="214" y="1060" fill="var(--r-unacc)">unacceptable</text>
+<text class="mono rat" x="214" y="1083">The EU AI Act explicitly prohibits AI systems that use emotion</text>
+<text class="mono rat" x="214" y="1100">recognition in the workplace (Article 5(1)(f)), as continuous</text>
+<text class="mono rat" x="214" y="1117">monitoring of employees' emotional states via voice recordings and</text>
+<text class="mono rat" x="214" y="1134">stress inferences in a professional setting constitutes a</text>
+<text class="mono rat" x="214" y="1151">prohibited practice regardless of the stated wellbeing purpose.</text>
+<text class="mono k" x="78" y="1175">Articles cited</text>
+<text class="mono b-ink" x="214" y="1175">Article 5(1)(f)</text>
+<text class="mono routed" x="62" y="1278">Routed to a human — the human decides; this engine stops here.</text>
+<rect x="62" y="1216" width="638" height="34" rx="8" fill="var(--v-div-bg)" stroke="var(--v-div)" stroke-width="1.3"/>
+<text class="mono vlabel" x="78" y="1238" fill="var(--v-div)">Verdict: DIVERGENT</text>
+<text class="vdesc" x="229.20000000000002" y="1238">   different tiers — the classification is contested</text>
+  <text class="cap" x="42" y="1345">A real run. At temperature 0 these models still vary run to run —</text>
+  <text class="cap" x="42" y="1363">that variance is the case for an independent second check and a human, not against it.</text>
+  <line class="divider" x1="40" y1="1391" x2="720" y2="1391"/>
+  <text class="mono foot-h" x="40" y="1407">PRINTED AFTER EVERY RUN</text>
+  <text class="foot" x="40" y="1425">The cited articles are illustrative and ungrounded — each agent cites from parametric knowledge, not a</text>
+  <text class="foot" x="40" y="1442">verified source. Production grounds every citation via retrieval over the actual legal text (see 0007).</text>
+  <text class="prov" x="40" y="1467">Verbatim output of `mca run` — the runnable core of the pattern behind Sandra (prileco.com).</text>
+</svg>
