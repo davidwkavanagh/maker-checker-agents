@@ -30,7 +30,7 @@ The need isn't a smarter single model. It's a *process* that produces an indepen
 
 ---
 
-## 2. What runs — the Maker-Checker engine *(runnable hero)*
+## 2. What runs — the Maker-Checker engine
 
 ![Maker–Checker risk-classification pipeline: a brief passes a deterministic scope gate, then Gemini Pro (Maker) and Claude Sonnet (Checker) independently classify it into one of four EU AI Act risk tiers — Unacceptable, High, Limited, Minimal — in parallel and state-isolated; a deterministic verdict marks the two as consistent, divergent, or inconclusive; every case is then routed to a human reviewer, who carries the legal weight.](assets/architecture.svg)
 
@@ -71,13 +71,15 @@ The same engine on two real cases — a clear-cut one the models agree on, and a
 
 The behaviour of the system — the risk taxonomy, the model assignments, the agreement rule, the prompts that frame each agent, and which inputs are even in scope for classification — lives in a **YAML configuration layer**, not in the Python.
 
-A non-technical owner (a compliance or risk lead) can change *which inputs get classified at all*, *what the system considers high-risk*, *which model does which job*, or *how each agent is framed* by editing config — **config, not code**. Agreement strictness is config-declared and validated too (`exact` today — the seam is live, not yet a tuning dial). The change takes effect **on the next run** — config is read fresh at startup, not hot-reloaded.
+A non-technical owner (a compliance or risk lead) can change *which inputs get classified at all*, *what the system considers high-risk*, or *how each agent is framed* by editing config — **config, not code**. The change takes effect **on the next run** — config is read fresh at startup, not hot-reloaded.
 
 One line of config decides what the system even reviews: adding a domain to the scope gate brings a whole class of cases under the two-model check, no Python touched:
 
 ![Before and after a one-line edit to config/policy.yaml: adding corporate-operations to the scope gate's domains flips bank-meeting-summariser from out of scope (the maker-checker pair skipped, routed to a human) to in scope (the Gemini Maker and Claude Checker both return minimal risk, a CONSISTENT verdict, still routed to a human). No Python changed.](assets/config-governance.svg)
 
-It turns a model pipeline into something a business owner can actually govern.
+*Which model does which job* and *how strict agreement is* are also expressed in the same config file (`models.maker`/`models.checker`, `agreement.threshold` — `exact` today, the seam is live, not yet a tuning dial), but those are capability and cost decisions, not compliance ones — they're engineering-owned in practice, even though no code deploy is required to change them. Config is the mechanism for auditability and a single source of truth; it isn't a claim about who signs off.
+
+It turns a model pipeline into something a business owner can actually govern — for the decisions that are actually theirs to govern.
 
 ---
 
@@ -186,7 +188,7 @@ applicable = [
 
 ## Worked example
 
-The EU AI Act is how the engine is *shown* working — public law, high-stakes, concrete. The engine itself is domain-agnostic: the same Maker-Checker pattern applies wherever a classification has to be defensible, not only to regulation.
+The EU AI Act is how the engine is *shown* working — public law, high-stakes, concrete. The engine itself is designed to be domain-agnostic: the same Maker-Checker pattern is intended to apply wherever a classification has to be defensible, not only to regulation. EU AI Act is the only worked example built so far — the design is proven out further as GDPR and other frameworks are added.
 
 ## Run it
 
